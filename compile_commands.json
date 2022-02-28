@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/oliversu/cpp_project/json_parser/build",
+  "command": "/usr/bin/c++  -I/home/oliversu/cpp_project/json_parser/include -g -std=gnu++17 -o CMakeFiles/json_parser.dir/src/main.cpp.o -c /home/oliversu/cpp_project/json_parser/src/main.cpp",
+  "file": "/home/oliversu/cpp_project/json_parser/src/main.cpp"
+}
+]
