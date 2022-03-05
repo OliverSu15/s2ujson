@@ -1,10 +1,12 @@
-#ifndef _JSON_PARSER_H_
-#define _JSON_PARSER_H_
-#include <cassert>
+#ifndef _JSON_HPP_
+#define _JSON_HPP_
+
 #include <cctype>
 #include <cstddef>
 #include <ctime>
 #include <exception>
+#include <initializer_list>
+#include <iostream>
 #include <iterator>
 #include <map>
 #include <memory>
@@ -14,11 +16,465 @@
 #include <variant>
 #include <vector>
 
-//#include "json_data.h"
-#include "json_object.h"
-
 namespace s2ujson {
 
+// forward declaration
+class JSON_Object;
+
+/**
+ * @brief used to represent all the data type in JSON
+ *
+ */
+enum class data_type { NULL_DATA, TRUE, FALSE, NUMBER, STRING, ARRAY, OBJECT };
+
+/**
+ * @brief The class which holds all the data, include 'Object'.
+ * @details Is basically a wrapper of 'std::variant'. All the 'exceptions' that
+ * threw by 'std::variant' need you to handle, if you do something incorrectly
+ *
+ */
+class JSON_Data {
+  // use to achieve initialization of array by using initializer_list
+  using var = std::variant<std::nullptr_t, bool, double, int, std::string>;
+
+ public:
+  // All the Constructors
+  constexpr JSON_Data() { set(nullptr); }
+  constexpr explicit JSON_Data(const bool d_bool) { set(d_bool); }
+  constexpr JSON_Data(const double d_number) { set(d_number); }
+  constexpr JSON_Data(const int d_number) {
+    set(static_cast<double>(d_number));
+  }
+  constexpr JSON_Data(const std::string &d_string) { set(d_string); }
+  constexpr JSON_Data(const char *ptr) { set(std::string(ptr)); }
+  constexpr JSON_Data(const std::vector<JSON_Data> &d_array) { set(d_array); }
+  constexpr JSON_Data(const JSON_Object &d_object) { set(d_object); }
+  constexpr JSON_Data(const std::nullptr_t n_ptr) { set(n_ptr); };
+  constexpr JSON_Data(std::initializer_list<var> list) { operator=(list); }
+  constexpr JSON_Data(
+      std::initializer_list<std::pair<std::string, JSON_Data>> list) {
+    operator=(list);
+  }
+
+  // All the getter
+  inline std::nullptr_t &get_null() { return std::get<std::nullptr_t>(data); }
+  inline bool &get_bool() { return std::get<bool>(data); }
+  inline double &get_number() { return std::get<double>(data); }
+  inline std::string &get_string() { return std::get<std::string>(data); }
+  inline std::vector<JSON_Data> &get_array() {
+    return std::get<std::vector<JSON_Data>>(data);
+  }
+  inline JSON_Object &get_object() {
+    return *std::get<std::shared_ptr<JSON_Object>>(data);
+  }
+
+  // All the setter
+  inline void set(const std::nullptr_t) {
+    type = data_type::NULL_DATA;
+    data = nullptr;
+  }
+  inline void set(bool d_bool) {
+    if (d_bool) {
+      type = data_type::TRUE;
+    } else {
+      type = data_type::FALSE;
+    }
+    data = d_bool;
+  }
+  inline void set(double d_number) {
+    type = data_type::NUMBER;
+    data = d_number;
+  }
+  inline void set(const std::string &d_string) {
+    type = data_type::STRING;
+    data = d_string;
+  }
+  inline void set(const std::vector<JSON_Data> &d_array) {
+    type = data_type::ARRAY;
+    data = d_array;
+  }
+  inline void set(const JSON_Object &d_object) {
+    type = data_type::OBJECT;
+    data = std::make_shared<JSON_Object>(d_object);
+  }
+
+  /**
+   * @brief a special setter which used to provied usage like `data.get<bool>()`
+   *
+   * @tparam T
+   * @return const T&
+   */
+  template <typename T>
+  inline const T &get() {
+    return std::get<T>(data);
+  }
+  // All overloaded `=` to do `object["key"] = something` or `object["key"] =
+  // {{"name", "val"}}` or `object["key"] = {1, "good", false, nullptr}`
+  inline JSON_Data &operator=(std::nullptr_t) {
+    set(nullptr);
+    return *this;
+  }
+  inline JSON_Data &operator=(const bool d_bool) {
+    set(d_bool);
+    return *this;
+  }
+  inline JSON_Data &operator=(const double d_number) {
+    set(d_number);
+    return *this;
+  }
+  inline JSON_Data &operator=(const int d_number) {
+    return operator=(static_cast<double>(d_number));
+  }
+  inline JSON_Data &operator=(const std::string &d_string) {
+    set(d_string);
+    return *this;
+  }
+  inline JSON_Data &operator=(const std::string &&d_string) {
+    return operator=(d_string);
+  }
+  inline JSON_Data &operator=(const char *ptr) {
+    return operator=(std::string(ptr));
+  }
+  inline JSON_Data &operator=(const std::vector<JSON_Data> &d_array) {
+    set(d_array);
+    return *this;
+  }
+  inline JSON_Data &operator=(const std::vector<JSON_Data> &&d_array) {
+    return operator=(d_array);
+  }
+  inline JSON_Data &operator=(const JSON_Object &d_object) {
+    set(d_object);
+    return *this;
+  }
+  inline JSON_Data &operator=(const JSON_Object &&d_object) {
+    return operator=(d_object);
+  }
+  JSON_Data &operator=(
+      std::initializer_list<std::pair<std::string, JSON_Data>> list);
+  JSON_Data &operator=(std::initializer_list<var> list);
+
+  // All overloaded `[]` to do `object["key1"]["key2"] = something"
+  JSON_Data &operator[](std::string &&key);
+  JSON_Data &operator[](std::string &key);
+
+  /**
+   * @brief output the JSON string of this data
+   * @return std::string
+   */
+  std::string output();
+
+ private:
+  /**
+   * @brief output array style JSON string for array
+   *
+   * @return std::string
+   */
+  std::string array_output();
+  /**
+   * @brief get the data out of var
+   *
+   * @param d_var
+   * @return JSON_Data
+   */
+  JSON_Data convert(var d_var);
+
+ private:
+  std::variant<std::nullptr_t, bool, double, std::string,
+               std::vector<JSON_Data>, std::shared_ptr<JSON_Object>>
+      data;
+  data_type type = data_type::NULL_DATA;
+};
+
+/**
+ * @brief a working `data structure` to let the user can read the data in the
+ * order they added
+ *
+ */
+class JSON_Object_Storage {
+ public:
+  explicit JSON_Object_Storage() = default;
+  inline void insert(const std::string &key, JSON_Data &data) {
+    key_to_pos.insert(std::make_pair(key, key_to_pos.size()));
+    if (real_data.size() >= key_to_pos.size()) {
+      real_data[key_to_pos.size() - 1] = data;
+    } else {
+      real_data.push_back(data);
+    }
+  }
+  inline void insert(const std::string &key, JSON_Data &&data) {
+    insert(key, data);
+  }
+
+  inline JSON_Data &find(const std::string &key) {
+    return real_data[key_to_pos.find(key)->second];
+  }
+
+  inline JSON_Data &find(const int pos) { return real_data[pos]; }
+
+  inline bool is_key_invalid(const std::string &key) {
+    return key_to_pos.find(key) == key_to_pos.end();
+  }
+
+  std::vector<std::pair<std::string, JSON_Data>> get_Storage_In_Order() {
+    std::vector<std::pair<std::string, JSON_Data>> result(key_to_pos.size());
+    for (auto i : key_to_pos) {
+      result[i.second] = std::make_pair(i.first, real_data[i.second]);
+    }
+    return result;
+  }
+
+ private:
+  std::map<std::string, int> key_to_pos;
+  std::vector<JSON_Data> real_data;
+};
+
+class JSON_Object {
+ public:
+  // All Constructor
+  explicit JSON_Object() = default;
+  JSON_Object(std::initializer_list<std::pair<std::string, JSON_Data>> list);
+
+  // All add
+  inline void add(const std::string &key) {
+    object.insert(std::make_pair(key, JSON_Data()));
+  }
+  inline void add(const std::string &&key) { add(key); }
+  inline void add(const std::string &key, std::nullptr_t) {
+    object.insert(std::make_pair(key, JSON_Data()));
+  }
+  inline void add(const std::string &&key, std::nullptr_t) {
+    add(key, nullptr);
+  }
+  inline void add(const std::string &key, const bool d_bool) {
+    object.insert(std::make_pair(key, JSON_Data(d_bool)));
+  }
+  inline void add(const std::string &&key, const bool d_bool) {
+    add(key, d_bool);
+  }
+  inline void add(const std::string &key, const double d_number) {
+    object.insert(std::make_pair(key, JSON_Data(d_number)));
+  }
+  inline void add(const std::string &&key, const double d_number) {
+    add(key, d_number);
+  }
+  inline void add(const std::string &key, const std::string &d_string) {
+    object.insert(std::make_pair(key, JSON_Data(d_string)));
+  }
+  inline void add(const std::string &&key, const std::string &d_string) {
+    add(key, d_string);
+  }
+  inline void add(const std::string &key,
+                  const std::vector<JSON_Data> &d_array) {
+    object.insert(std::make_pair(key, JSON_Data(d_array)));
+  }
+  inline void add(const std::string &&key,
+                  const std::vector<JSON_Data> &d_array) {
+    add(key, d_array);
+  }
+  inline void add(const std::string &key, const JSON_Object &d_object) {
+    object.insert(std::make_pair(key, JSON_Data(d_object)));
+  }
+  inline void add(const std::string &&key, const JSON_Object &d_object) {
+    add(key, d_object);
+  }
+  inline void add(const std::string &key, const JSON_Data &d_data) {
+    object.insert(std::make_pair(key, d_data));
+  }
+  inline void add(const std::string &&key, const JSON_Data &d_data) {
+    add(key, d_data);
+  }
+
+  // All getter
+  inline std::nullptr_t get_null(const std::string &key) {
+    is_key_valid(key);
+    return object.find(key)->second.get_null();
+  }
+  inline std::nullptr_t get_null(const std::string &&key) {
+    return get_null(key);
+  }
+
+  inline bool get_bool(const std::string &key) {
+    is_key_valid(key);
+    return object.find(key)->second.get_bool();
+  }
+  inline bool get_bool(const std::string &&key) { return get_bool(key); }
+
+  inline double get_number(const std::string &key) {
+    is_key_valid(key);
+    return object.find(key)->second.get_number();
+  }
+  inline double get_number(std::string &&key) { return get_number(key); }
+
+  inline const std::string &get_string(const std::string &key) {
+    is_key_valid(key);
+    return object.find(key)->second.get_string();
+  }
+  inline const std::string &get_string(std::string &&key) {
+    return get_string(key);
+  }
+
+  inline const std::vector<JSON_Data> &get_array(const std::string &key) {
+    is_key_valid(key);
+    return object.find(key)->second.get_array();
+  }
+  inline const std::vector<JSON_Data> &get_array(std::string &&key) {
+    return get_array(key);
+  }
+
+  inline JSON_Object &get_object(const std::string &key) {
+    is_key_valid(key);
+    return (object.find(key)->second.get_object());
+  }
+  inline JSON_Object &get_object(std::string &&key) { return get_object(key); }
+
+  // All operator
+  inline JSON_Data &operator[](const std::string &key) {
+    auto iter = object.find(key);
+    if (iter != object.end()) {
+      return iter->second;
+    }
+    return object.insert(std::make_pair(key, JSON_Data())).first->second;
+  }
+  inline JSON_Data &operator[](const std::string &&key) {
+    return operator[](key);
+  }
+
+  /**
+   * @brief allow user to use
+   * `JSON_Object object = {{"key","value"},{"key","value"}}`
+   *
+   * @param list
+   * @return JSON_Object&
+   */
+  JSON_Object &operator=(
+      std::initializer_list<std::pair<std::string, JSON_Data>> list);
+
+  /**
+   * @brief return object's JSON string
+   *
+   * @return std::string
+   */
+  inline std::string output() {
+    std::string output_string = "{";
+    for (auto i : object) {
+      output_string += ("\"" + i.first + "\"" + ":" + i.second.output() + ",");
+    }
+    output_string.push_back('}');
+    return output_string;
+  }
+
+ private:
+  inline void is_key_valid(const std::string &key) {
+    if (object.find(key) == object.end()) {
+      throw std::invalid_argument("invalid key");
+    }
+  }
+  inline void is_key_valid(const std::string &&key) { is_key_valid(key); }
+
+ private:
+  std::map<std::string, JSON_Data> object;
+};
+
+/**
+ * @brief specified version of `get` to get the `JSON_Object` ranther than
+ * pointer
+ *
+ * @tparam
+ * @return const JSON_Object&
+ */
+template <>
+inline const JSON_Object &JSON_Data::get<JSON_Object>() {
+  return *std::get<std::shared_ptr<JSON_Object>>(data);
+}
+
+JSON_Data &JSON_Data::operator=(
+    std::initializer_list<std::pair<std::string, JSON_Data>> list) {
+  JSON_Object object;
+  for (auto i : list) {
+    object.add(i.first, i.second);
+  }
+  set(object);
+  return *this;
+}
+
+JSON_Data &JSON_Data::operator=(std::initializer_list<var> list) {
+  std::vector<JSON_Data> array(list.size());
+  int pos = 0;
+  for (auto i : list) {
+    array[pos++] = convert(i);
+  }
+  set(array);
+  return *this;
+}
+
+JSON_Data &JSON_Data::operator[](std::string &key) {
+  if (type != data_type::OBJECT) {
+    // if not exist create one
+    set(JSON_Object());
+  }
+  return (*std::get<std::shared_ptr<JSON_Object>>(data))[key];
+}
+JSON_Data &JSON_Data::operator[](std::string &&key) { return operator[](key); }
+
+std::string JSON_Data::output() {
+  switch (type) {
+    case data_type::NULL_DATA:
+      return "null";
+    case data_type::TRUE:
+      return "true";
+    case data_type::FALSE:
+      return "false";
+    case data_type::NUMBER:
+      return std::to_string(get<double>());
+    case data_type::STRING:
+      return "\"" + get_string() + "\"";
+    case data_type::ARRAY:
+      return array_output();
+    case data_type::OBJECT:
+      return get_object().output();
+    default:
+      throw std::invalid_argument("not implented");
+  }
+}
+std::string JSON_Data::array_output() {
+  std::string output_string = "[";
+  auto array = get_array();
+  for (auto i : array) {
+    output_string += (i.output() + ",");
+  }
+  output_string += "]";
+  return output_string;
+}
+
+JSON_Data JSON_Data::convert(var d_var) {
+  switch (d_var.index()) {
+    case 0:
+      return JSON_Data(std::get<std::nullptr_t>(d_var));
+    case 1:
+      return JSON_Data(std::get<bool>(d_var));
+    case 2:
+      return JSON_Data(std::get<double>(d_var));
+    case 3:
+      return JSON_Data(std::get<int>(d_var));
+    case 4:
+      return JSON_Data(std::get<std::string>(d_var));
+    default:
+      throw std::invalid_argument("wrong");
+  }
+}
+
+JSON_Object::JSON_Object(
+    std::initializer_list<std::pair<std::string, JSON_Data>> list) {
+  operator=(list);
+}
+
+JSON_Object &JSON_Object::operator=(
+    std::initializer_list<std::pair<std::string, JSON_Data>> list) {
+  for (auto i : list) {
+    object.insert(std::make_pair(i.first, i.second));
+  }
+  return *this;
+}
 // Exception
 #define invalid_Unicode_HEX std::invalid_argument("Invalid Unicode HEX")
 #define invalid_HEX std::invalid_argument("invalid HEX")

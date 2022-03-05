@@ -31,7 +31,6 @@ void EXPECT_EQ_BASE(bool equality, int line_num, T expect, T actual) {
 template <typename T>
 void EXPECT_EXCEPTION(int line_num, std::string json, data_type type,
                       T expected) try {
-  // might have a better way to handle it
   static_assert(std::is_base_of<std::exception, T>::value,
                 "T is not a exception");
   test_count++;
@@ -55,14 +54,14 @@ void EXPECT_EXCEPTION(int line_num, std::string json, data_type type,
       JSON_parse_array(json);
       break;
     case data_type::OBJECT:
-      // TODO
+      JSON_parse_object(json);
       break;
   }
   std::cerr << line_num << std::endl;
 } catch (T &e) {
-  string a = e.what();
-  string b = expected.what();
-  if (string(e.what()) == string(expected.what())) {
+  std::string a = e.what();
+  std::string b = expected.what();
+  if (std::string(e.what()) == std::string(expected.what())) {
     test_pass++;
   } else {
     std::cerr << line_num << expected.what() << " : " << e.what() << std::endl;
@@ -78,34 +77,22 @@ void test_parse_null() {
   EXPECT_EQ_INT(__LINE__, nullptr, JSON_parse_null("null"));
   EXPECT_EXCEPTION(__LINE__, "nall", data_type::NULL_DATA,
                    std::invalid_argument("literial \"null\" is not correct"));
-
-  string test = "null";
-  auto iter = test.cbegin();
-  EXPECT_EQ_INT(__LINE__, nullptr, JSON_parse_null_iter(iter));
 }
 
 void test_parse_true() {
   EXPECT_EQ_INT(__LINE__, true, JSON_parse_true("true"));
   EXPECT_EXCEPTION(__LINE__, "taue", data_type::TRUE,
                    std::invalid_argument("literial \"true\" is not correct"));
-  string test = "true";
-  auto iter = test.cbegin();
-  EXPECT_EQ_INT(__LINE__, true, JSON_parse_true_iter(iter));
 }
 
 void test_parse_false() {
   EXPECT_EQ_INT(__LINE__, false, JSON_parse_false("false"));
   EXPECT_EXCEPTION(__LINE__, "fulsr", data_type::FALSE,
                    std::invalid_argument("literial \"false\" is not correct"));
-
-  string test = "false";
-  auto iter = test.cbegin();
-  EXPECT_EQ_INT(__LINE__, false, JSON_parse_false_iter(iter));
 }
 
-void TEST_NUMBER(int line_num, double expected, string json) {
-  auto iter = json.cbegin();
-  EXPECT_EQ_INT(line_num, expected, JSON_parse_number_iter(iter));
+void TEST_NUMBER(int line_num, double expected, std::string json) {
+  EXPECT_EQ_INT(line_num, expected, JSON_parse_number(json));
 }
 
 void test_parse_number() {
@@ -208,7 +195,7 @@ void test_parse_invalid_argument() {
                    std::invalid_argument("number is not correct"));
   EXPECT_EXCEPTION(__LINE__, "nan", data_type::NUMBER,
                    std::invalid_argument("number is not correct"));
-  EXPECT_EXCEPTION(__LINE__, string("0123"), data_type::NUMBER,
+  EXPECT_EXCEPTION(__LINE__, std::string("0123"), data_type::NUMBER,
                    std::invalid_argument("number is not correct"));
   EXPECT_EXCEPTION(__LINE__, "0x0", data_type::NUMBER,
                    std::invalid_argument("number is not correct"));
@@ -216,48 +203,47 @@ void test_parse_invalid_argument() {
                    std::invalid_argument("number is not correct"));
 }
 
-void TEST_STRING(int line_num, string expected, string json) {
-  auto iter = json.cbegin();
-  EXPECT_EQ_INT(line_num, expected, JSON_parse_string_iter(iter));
+void TEST_STRING(int line_num, std::string expected, std::string json) {
+  EXPECT_EQ_INT(line_num, expected, JSON_parse_string(json));
 }
 
 void test_parse_string() {
-  EXPECT_EQ_INT(__LINE__, string(""), JSON_parse_string("\"\""));
-  EXPECT_EQ_INT(__LINE__, string("Hello"), JSON_parse_string("\"Hello\""));
-  EXPECT_EQ_INT(__LINE__, string("Hello\nWorld"),
+  EXPECT_EQ_INT(__LINE__, std::string(""), JSON_parse_string("\"\""));
+  EXPECT_EQ_INT(__LINE__, std::string("Hello"), JSON_parse_string("\"Hello\""));
+  EXPECT_EQ_INT(__LINE__, std::string("Hello\nWorld"),
                 JSON_parse_string("\"Hello\\nWorld\""));
-  EXPECT_EQ_INT(__LINE__, string("\" \\ / \b \f \n \r \t"),
+  EXPECT_EQ_INT(__LINE__, std::string("\" \\ / \b \f \n \r \t"),
                 JSON_parse_string("\"\\\" \\\\ \\/ \\b \\f \\n \\r \\t\""));
-  EXPECT_EQ_INT(__LINE__, string("Hello\0World"),
+  EXPECT_EQ_INT(__LINE__, std::string("Hello\0World"),
                 JSON_parse_string("\"Hello\\u0000World\""));
-  EXPECT_EQ_INT(__LINE__, string("\x24"),
+  EXPECT_EQ_INT(__LINE__, std::string("\x24"),
                 JSON_parse_string("\"\\u0024\"")); /* Dollar sign U+0024*/
-  EXPECT_EQ_INT(__LINE__, string("\xC2\xA2"),
+  EXPECT_EQ_INT(__LINE__, std::string("\xC2\xA2"),
                 JSON_parse_string("\"\\u00A2\"")); /* Cents sign U+00A2 */
-  EXPECT_EQ_INT(__LINE__, string("\xE2\x82\xAC"),
+  EXPECT_EQ_INT(__LINE__, std::string("\xE2\x82\xAC"),
                 JSON_parse_string("\"\\u20AC\"")); /* Euro sign U+20AC */
   EXPECT_EQ_INT(
-      __LINE__, string("\xF0\x9D\x84\x9E"),
+      __LINE__, std::string("\xF0\x9D\x84\x9E"),
       JSON_parse_string("\"\\uD834\\uDD1E\"")); /* G clef sign U+1D11E */
   EXPECT_EQ_INT(
-      __LINE__, string("\xF0\x9D\x84\x9E"),
+      __LINE__, std::string("\xF0\x9D\x84\x9E"),
       JSON_parse_string("\"\\ud834\\udd1e\"")); /* G clef sign U+1D11E */
   //------------------------------------------
-  TEST_STRING(__LINE__, string(""), ("\"\""));
-  TEST_STRING(__LINE__, string("Hello"), ("\"Hello\""));
-  TEST_STRING(__LINE__, string("Hello\nWorld"), ("\"Hello\\nWorld\""));
-  TEST_STRING(__LINE__, string("\" \\ / \b \f \n \r \t"),
+  TEST_STRING(__LINE__, std::string(""), ("\"\""));
+  TEST_STRING(__LINE__, std::string("Hello"), ("\"Hello\""));
+  TEST_STRING(__LINE__, std::string("Hello\nWorld"), ("\"Hello\\nWorld\""));
+  TEST_STRING(__LINE__, std::string("\" \\ / \b \f \n \r \t"),
               ("\"\\\" \\\\ \\/ \\b \\f \\n \\r \\t\""));
-  TEST_STRING(__LINE__, string("Hello\0World"), ("\"Hello\\u0000World\""));
-  TEST_STRING(__LINE__, string("\x24"),
+  TEST_STRING(__LINE__, std::string("Hello\0World"), ("\"Hello\\u0000World\""));
+  TEST_STRING(__LINE__, std::string("\x24"),
               ("\"\\u0024\"")); /* Dollar sign U+0024*/
-  TEST_STRING(__LINE__, string("\xC2\xA2"),
+  TEST_STRING(__LINE__, std::string("\xC2\xA2"),
               ("\"\\u00A2\"")); /* Cents sign U+00A2 */
-  TEST_STRING(__LINE__, string("\xE2\x82\xAC"),
+  TEST_STRING(__LINE__, std::string("\xE2\x82\xAC"),
               ("\"\\u20AC\"")); /* Euro sign U+20AC */
-  TEST_STRING(__LINE__, string("\xF0\x9D\x84\x9E"),
+  TEST_STRING(__LINE__, std::string("\xF0\x9D\x84\x9E"),
               ("\"\\uD834\\uDD1E\"")); /* G clef sign U+1D11E */
-  TEST_STRING(__LINE__, string("\xF0\x9D\x84\x9E"),
+  TEST_STRING(__LINE__, std::string("\xF0\x9D\x84\x9E"),
               ("\"\\ud834\\udd1e\"")); /* G clef sign U+1D11E */
 }
 
@@ -333,7 +319,7 @@ void test_parse_array() {
   EXPECT_EQ_INT(__LINE__, nullptr, array[0].get_null());
   EXPECT_EQ_INT(__LINE__, false, array[1].get_bool());
   EXPECT_EQ_INT(__LINE__, true, array[2].get_bool());
-  EXPECT_EQ_INT(__LINE__, string("abc"), array[4].get_string());
+  EXPECT_EQ_INT(__LINE__, std::string("abc"), array[4].get_string());
   EXPECT_EQ_INT(__LINE__, 123.0, array[3].get_number());
 
   array = JSON_parse_array("[ [ ] , [ 0 ] , [ 0 , 1 ] , [ 0 , 1 , 2 ] ]");
@@ -357,78 +343,24 @@ void test_parse_array() {
   EXPECT_EQ_INT(__LINE__, 1E10, array[8].get_number());
   EXPECT_EQ_INT(__LINE__, 1e10, array[9].get_number());
 
-  // array = JSON_parse_array("[1,[1,[]]]");
-
   EXPECT_EXCEPTION(__LINE__, "[\"a\", nul]", data_type::ARRAY,
                    std::invalid_argument("literial \"null\" is not correct"));
-
-  //-------------------
-  string test = "[ ]";
-  auto iter = test.cbegin();
-  auto array2 = JSON_parse_array_iter(iter);
-  EXPECT_EQ_INT(__LINE__, true, array2.empty());
-
-  test = "[ null , false , true , 123 , \"abc\" ]";
-  iter = test.cbegin();
-  array2 = JSON_parse_array_iter(iter);
-  EXPECT_EQ_INT(__LINE__, nullptr, array2[0].get_null());
-  EXPECT_EQ_INT(__LINE__, false, array2[1].get_bool());
-  EXPECT_EQ_INT(__LINE__, true, array2[2].get_bool());
-  EXPECT_EQ_INT(__LINE__, string("abc"), array2[4].get_string());
-  EXPECT_EQ_INT(__LINE__, 123.0, array2[3].get_number());
-
-  test = "[ [ ] , [ 0 ] , [ 0 , 1 ] , [ 0 , 1 , 2 ] ]";
-  iter = test.cbegin();
-  array2 = JSON_parse_array_iter(iter);
-  EXPECT_EQ_INT(__LINE__, true, array2[0].get_array().empty());
-  EXPECT_EQ_INT(__LINE__, 0.0, array2[1].get_array()[0].get_number());
-  EXPECT_EQ_INT(__LINE__, 0.0, array2[2].get_array()[0].get_number());
-  EXPECT_EQ_INT(__LINE__, 1.0, array2[2].get_array()[1].get_number());
-  EXPECT_EQ_INT(__LINE__, 0.0, array2[3].get_array()[0].get_number());
-  EXPECT_EQ_INT(__LINE__, 1.0, array2[3].get_array()[1].get_number());
-  EXPECT_EQ_INT(__LINE__, 2.0, array2[3].get_array()[2].get_number());
-
-  test = "[0, -0, -0.0,1, -1,1.5, -1.5, 3.1416,1E10,1e10 ]";
-  iter = test.cbegin();
-  array2 = JSON_parse_array_iter(iter);
-  EXPECT_EQ_INT(__LINE__, 0.0, array2[0].get_number());
-  EXPECT_EQ_INT(__LINE__, -0.0, array2[1].get_number());
-  EXPECT_EQ_INT(__LINE__, -0.0, array2[2].get_number());
-  EXPECT_EQ_INT(__LINE__, 1.0, array2[3].get_number());
-  EXPECT_EQ_INT(__LINE__, -1.0, array2[4].get_number());
-  EXPECT_EQ_INT(__LINE__, 1.5, array2[5].get_number());
-  EXPECT_EQ_INT(__LINE__, -1.5, array2[6].get_number());
-  EXPECT_EQ_INT(__LINE__, 3.1416, array2[7].get_number());
-  EXPECT_EQ_INT(__LINE__, 1E10, array2[8].get_number());
-  EXPECT_EQ_INT(__LINE__, 1e10, array2[9].get_number());
-
-  test = "[1,[1,[]]]";
-  iter = test.cbegin();
-  array2 = JSON_parse_array_iter(iter);
-  EXPECT_EQ_INT(__LINE__, 1.0, array2[0].get_number());
 }
 
 void test_parse_object() {
-  string test =
+  std::string test =
       "  { \"n\" : null , \"f\" : false , \"t\" : true , \"i\" : 123 , \"s\" "
       ": "
       "\"abc\", \"a\" : [ 1, 2, 3 ],\"o\" : {\"1\" : 1, \"2\" : 2, \"3\" : 3 "
       "}}";
-  auto iter = test.cbegin();
-  JSON_Object object2 = JSON_parse_object_iter(iter);
+  JSON_Object object2 = JSON_parse_object(test);
   // std::cout << object2.output() << std::endl;
 
   EXPECT_EQ_INT(__LINE__, nullptr, object2.get_null("n"));
   EXPECT_EQ_INT(__LINE__, false, object2.get_bool("f"));
   EXPECT_EQ_INT(__LINE__, true, object2.get_bool("t"));
   EXPECT_EQ_INT(__LINE__, 123.0, object2.get_number("i"));
-  EXPECT_EQ_INT(__LINE__, string("abc"), object2.get_string("s"));
-  // object2["i"] = 546.0;
-  // EXPECT_EQ_INT(__LINE__, nullptr, object2.get_null("n"));
-  // EXPECT_EQ_INT(__LINE__, false, object2.get_bool("f"));
-  // EXPECT_EQ_INT(__LINE__, true, object2.get_bool("t"));
-  // EXPECT_EQ_INT(__LINE__, 123.0, object2.get_number("i"));
-  // EXPECT_EQ_INT(__LINE__, string("abc"), object2.get_string("s"));
+  EXPECT_EQ_INT(__LINE__, std::string("abc"), object2.get_string("s"));
 
   test = R"({
       "glossary" : {
@@ -452,11 +384,8 @@ void test_parse_object() {
         }
       }
     })";
-  iter = test.cbegin();
-  object2 = JSON_parse_object_iter(iter);
+  object2 = JSON_parse_object(test);
   JSON_Object ob = object2.get_object("glossary");
-  // string a = "a";
-  // object2["glossary"]["GlossDiv"]["GlossList"]["GlossEntry"]["ID"] = a;
   // std::cout << object2.output() << std::endl;
 
   test = R"({"widget": {
@@ -485,8 +414,7 @@ void test_parse_object() {
         "onMouseUp": "sun1.opacity = (sun1.opacity / 100) * 90;"
     }
 }}   )";
-  iter = test.cbegin();
-  object2 = JSON_parse_object_iter(iter);
+  object2 = JSON_parse_object(test);
   ob = object2;
   // std::cout << object2.output() << std::endl;
 
@@ -578,8 +506,7 @@ void test_parse_object() {
   "taglib": {
     "taglib-uri": "cofax.tld",
     "taglib-location": "/WEB-INF/tlds/cofax.tld"}}})";
-  iter = test.cbegin();
-  object2 = JSON_parse_object_iter(iter);
+  object2 = JSON_parse_object(test);
   ob = object2;
   // std::cout << object2.output() << std::endl;
 
@@ -610,8 +537,7 @@ void test_parse_object() {
         {"id": "About", "label": "About Adobe CVG Viewer..."}
     ]
 }})";
-  iter = test.cbegin();
-  object2 = JSON_parse_object_iter(iter);
+  object2 = JSON_parse_object(test);
   ob = object2;
   // std::cout << object2.output() << std::endl;
 
@@ -631,14 +557,17 @@ void test_API() {
   j["float"] = 1.5;
   j["string"] = "this is a string";
   j["boolean"] = true;
+  j["array"] = {1, "good", false, nullptr};
+  j["animal"] = {{"name", "deagon"}};
   j["user"]["id"] = 10;
   j["user"]["name"] = "Nomango";  //被转成bool类型了
   EXPECT_EQ_INT(__LINE__, 1.0, j.get_number("number"));
   EXPECT_EQ_INT(__LINE__, 1.5, j.get_number("float"));
-  EXPECT_EQ_INT(__LINE__, string("this is a string"), j.get_string("string"));
+  EXPECT_EQ_INT(__LINE__, std::string("this is a string"),
+                j.get_string("string"));
   EXPECT_EQ_INT(__LINE__, true, j.get_bool("boolean"));
   EXPECT_EQ_INT(__LINE__, 10.0, j.get_object("user").get_number("id"));
-  EXPECT_EQ_INT(__LINE__, string("Nomango"),
+  EXPECT_EQ_INT(__LINE__, std::string("Nomango"),
                 j.get_object("user").get_string("name"));
   JSON_Object obj2 = {
       {"nul", nullptr},
