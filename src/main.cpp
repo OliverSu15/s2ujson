@@ -1,10 +1,16 @@
+#include <any>
+#include <cstddef>
 #include <exception>
+#include <initializer_list>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
+#include <utility>
+#include <variant>
 #include <vector>
 
+#include "json_data.h"
 #include "json_parser.hpp"
 
 using namespace s2ujson;
@@ -410,18 +416,19 @@ void test_parse_object() {
       "}}";
   auto iter = test.cbegin();
   JSON_Object object2 = JSON_parse_object_iter(iter);
+  // std::cout << object2.output() << std::endl;
 
   EXPECT_EQ_INT(__LINE__, nullptr, object2.get_null("n"));
   EXPECT_EQ_INT(__LINE__, false, object2.get_bool("f"));
   EXPECT_EQ_INT(__LINE__, true, object2.get_bool("t"));
   EXPECT_EQ_INT(__LINE__, 123.0, object2.get_number("i"));
   EXPECT_EQ_INT(__LINE__, string("abc"), object2.get_string("s"));
-  object2["i"] = 546.0;
-  EXPECT_EQ_INT(__LINE__, nullptr, object2.get_null("n"));
-  EXPECT_EQ_INT(__LINE__, false, object2.get_bool("f"));
-  EXPECT_EQ_INT(__LINE__, true, object2.get_bool("t"));
-  EXPECT_EQ_INT(__LINE__, 123.0, object2.get_number("i"));
-  EXPECT_EQ_INT(__LINE__, string("abc"), object2.get_string("s"));
+  // object2["i"] = 546.0;
+  // EXPECT_EQ_INT(__LINE__, nullptr, object2.get_null("n"));
+  // EXPECT_EQ_INT(__LINE__, false, object2.get_bool("f"));
+  // EXPECT_EQ_INT(__LINE__, true, object2.get_bool("t"));
+  // EXPECT_EQ_INT(__LINE__, 123.0, object2.get_number("i"));
+  // EXPECT_EQ_INT(__LINE__, string("abc"), object2.get_string("s"));
 
   test = R"({
       "glossary" : {
@@ -448,6 +455,9 @@ void test_parse_object() {
   iter = test.cbegin();
   object2 = JSON_parse_object_iter(iter);
   JSON_Object ob = object2.get_object("glossary");
+  // string a = "a";
+  // object2["glossary"]["GlossDiv"]["GlossList"]["GlossEntry"]["ID"] = a;
+  // std::cout << object2.output() << std::endl;
 
   test = R"({"widget": {
     "debug": "on",
@@ -478,6 +488,7 @@ void test_parse_object() {
   iter = test.cbegin();
   object2 = JSON_parse_object_iter(iter);
   ob = object2;
+  // std::cout << object2.output() << std::endl;
 
   test = R"({"web-app": {
   "servlet": [
@@ -570,6 +581,7 @@ void test_parse_object() {
   iter = test.cbegin();
   object2 = JSON_parse_object_iter(iter);
   ob = object2;
+  // std::cout << object2.output() << std::endl;
 
   test = R"({"menu": {
     "header": "SVG Viewer",
@@ -601,6 +613,7 @@ void test_parse_object() {
   iter = test.cbegin();
   object2 = JSON_parse_object_iter(iter);
   ob = object2;
+  // std::cout << object2.output() << std::endl;
 
   object2 = JSON_parse_object(
       "  { \"n\" : null , \"f\" : false , \"t\" : true , \"i\" : 123 , \"s\" "
@@ -611,15 +624,91 @@ void test_parse_object() {
 
   object2 = JSON_parse_object(test);
 }
+void test_add() {
+  // JSON_Object object;
+  // object["pi"] = 3.141;
+  // object["happy"] = true;
+  // object["name"] = "Niels";
+  // object["nothing"] = nullptr;
+  // object["answer"]["everything"] = 42;
+  // object["answer"]["float"] = 42.0f;
+  // object["list"] = {1, 0, 2};
+  // object["list"] = {1.0, 0.0, 2.0};
+  // object["list2"] = {"John", "Lance", "KKK"};
+  // // object["list3"] = {"John", 1, 1.2, false};
+  // object["object"] = {{"currency", "USD"}, {"value", 58.95},   {"ff", false},
+  //                     {"asd", true},       {"nullp", nullptr}, {"list", 1}};
+
+  // // JSON_Object j2;
+  // JSON_Object j2 = {
+  //     {"pi", 3.141},         {"happy", true},          {"name", "Niels"},
+  //     {"nothing", nullptr},  {"answer", "everything"}, {"list", 1},
+  //     {"object", "currency"}};
+  // auto a = JSON_Data(3.141);
+  // a = JSON_Data(true);
+  // a = JSON_Data("Niels");
+  // a = JSON_Data(nullptr);
+  // a = JSON_Data({1, 0, 2});
+  // a = JSON_Data(42);
+  // a = JSON_Data({{"everything", 42}});
+  // a = JSON_Data({{"currency", "USD"}, {"value", 42.99}});
+  // JSON_Object j3 = {{"pi", 3.141},
+  //                   {"happy", true},
+  //                   {"name", "Niels"},
+  //                   {"nothing", nullptr},
+  //                   {"answer", {{"everything", 42}}},
+  //                   {"list", {1, 0, 2}},
+  //                   {"object", {{"currency", "USD"},
+  //{"value", 42.99}}}};
+  // JSON_Data q(std::forward<int>(13));
+  // q = 13;
+  // int asd = 13;
+  // JSON_Data(std::forward<int>(std::move(asd)));
+  // std::pair<std::string, JSON_Data>("good", "13");
+  // std::map<std::string, test> a = {
+  //     {"goood", "13"}, {"bad", "13"}, {"sda", "false"}};
+  // convertor({{"goood", 13}, {"bad", 5}, {"sda", 17}});
+  //  JSON_Data m{"pi", {{"everything", 42}}};
+  //   std::pair<std::string, JSON_Data> m{{"everything", 42}};
+  //   std::pair<std::string, JSON_Data> p{"pi", {{"everything", 42}}};
+  //    std::vector<std::pair<std::string, JSON_Data>> s;
+  //     std::initializer_list<std::pair<const std::string,
+  //     std::variant<JSON_Data>>>
+  //         a = {{"pi", 3.141},
+  //              {"happy", true},
+  //              {"name", "Niels"},
+  //              {"nothing", nullptr}};
+  //      {"answer", {{"everything", 42}}},
+  //      {"list", {1, 0, 2}},
+  //      {"object", {{"currency", "USD"}, {"value", 42.99}}}};
+}
+
+void test_API() {
+  JSON_Object j;
+  j["number"] = 1;
+  j["float"] = 1.5;
+  j["string"] = "this is a string";
+  j["boolean"] = true;
+  j["user"]["id"] = 10;
+  j["user"]["name"] = "Nomango";
+
+  // JSON_Data arr = {1, 2, 3};
+  //  std::initializer_list<JSON_Data> a = {1, 2, 3};
+
+  // JSON_Object obj = {{"user", {{"id", 10}, {"name", "Nomango"}}}};
+  // JSON_Object lk = {{"key", "value"}, {"key2", "value2"}};
+  JSON_Object obj2 = {
+      {"nul", nullptr},
+      {"number", 1},
+      {"float", 1.3},
+      {"boolean", false},
+      {"array", {1, 2, true, 1.4}},
+      {"object", {{"key", "value"}, {"key2", "value2"}}},
+  };
+  auto l = obj2;
+}
 
 int main(int argc, char const *argv[]) {
-  // try {
-  //   double a = std::stod("nan");
-  // } catch (std::exception &e) {
-  //   std::cerr << e.what() << std::endl;
-  // }
-  //   bool temp = (std::stold("3.1416") == 3.1416);
-  //   std::cout << "\u0020" /*(char)('\u0000' + 0x20AC)*/ << std::endl;
   test_parse_null();
   test_parse_false();
   test_parse_true();
@@ -630,6 +719,7 @@ int main(int argc, char const *argv[]) {
   test_parse_string_error();
   test_parse_array();
   test_parse_object();
+  test_API();
   std::cout << "test count:" << test_count << ",test_pass:" << test_pass
             << std::endl;
   return 0;
