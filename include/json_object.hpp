@@ -13,9 +13,6 @@
 
 #include "json_data.h"
 //#include "json_parser.hpp"
-// TODO I think I need to do less on JSON_Object, and do more on JSON_Data. I
-// should make the JSON_Data handle how to get value and how to set value, this
-// related part in JSON_Object need to be just a portal.
 namespace s2ujson {
 
 class JSON_Object_Storage {
@@ -66,9 +63,9 @@ class JSON_Ref {
   JSON_Ref(double number) : data(number) {}
   explicit JSON_Ref(bool d_bool) : data(d_bool) {}
   JSON_Ref(std::string d_string) : data(d_string) {}
-  JSON_Ref(char *ptr) : data(ptr) {}
-  // JSON_Ref(std::initializer_list<std::pair<std::string, JSON_Data>> list);
-  JSON_Ref(std::initializer_list<std::pair<std::string, JSON_Data>> list);
+  JSON_Ref(const char *ptr) : data(ptr) {}
+  //  JSON_Ref(std::initializer_list<std::pair<std::string, JSON_Data>> list);
+  JSON_Ref(std::initializer_list<std::pair<std::string, JSON_Ref>> list);
   JSON_Ref(std::initializer_list<var> list) {
     std::vector<JSON_Data> d_array;
     for (auto i : list) {
@@ -101,25 +98,8 @@ class JSON_Object {
  public:
   explicit JSON_Object() = default;
   JSON_Object(std::initializer_list<std::pair<std::string, JSON_Ref>> list);
-  // JSON_Object(std::initializer_list<std::pair<std::string, JSON_Data>> list);
   JSON_Object &operator=(
       std::initializer_list<std::pair<std::string, JSON_Ref>> list);
-  // JSON_Object(std::initializer_list<std::pair<std::string, JSON_Data>> list)
-  // {} JSON_Object(
-  //     std::initializer_list<
-  //         std::pair<const std::string,
-  //                   std::variant<std::nullptr_t, bool, double, int,
-  //                   std::string,
-  //                                char *, std::vector<JSON_Data>,
-  //                                JSON_Object>>>
-  //         list)
-  //     : object(list.size()) {
-  //   for (auto i : list) {
-  //     object.insert(i.first, convert_to_JSON_data(i.second));
-  //   }
-  // }
-  // JSON_Object(std::initializer_list<std::pair<const std::string, T>>) {
-  // }
   inline void add(const std::string &key, const bool d_bool) {
     object.insert(key, JSON_Data(d_bool));
   }

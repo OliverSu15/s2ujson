@@ -624,64 +624,6 @@ void test_parse_object() {
 
   object2 = JSON_parse_object(test);
 }
-void test_add() {
-  // JSON_Object object;
-  // object["pi"] = 3.141;
-  // object["happy"] = true;
-  // object["name"] = "Niels";
-  // object["nothing"] = nullptr;
-  // object["answer"]["everything"] = 42;
-  // object["answer"]["float"] = 42.0f;
-  // object["list"] = {1, 0, 2};
-  // object["list"] = {1.0, 0.0, 2.0};
-  // object["list2"] = {"John", "Lance", "KKK"};
-  // // object["list3"] = {"John", 1, 1.2, false};
-  // object["object"] = {{"currency", "USD"}, {"value", 58.95},   {"ff", false},
-  //                     {"asd", true},       {"nullp", nullptr}, {"list", 1}};
-
-  // // JSON_Object j2;
-  // JSON_Object j2 = {
-  //     {"pi", 3.141},         {"happy", true},          {"name", "Niels"},
-  //     {"nothing", nullptr},  {"answer", "everything"}, {"list", 1},
-  //     {"object", "currency"}};
-  // auto a = JSON_Data(3.141);
-  // a = JSON_Data(true);
-  // a = JSON_Data("Niels");
-  // a = JSON_Data(nullptr);
-  // a = JSON_Data({1, 0, 2});
-  // a = JSON_Data(42);
-  // a = JSON_Data({{"everything", 42}});
-  // a = JSON_Data({{"currency", "USD"}, {"value", 42.99}});
-  // JSON_Object j3 = {{"pi", 3.141},
-  //                   {"happy", true},
-  //                   {"name", "Niels"},
-  //                   {"nothing", nullptr},
-  //                   {"answer", {{"everything", 42}}},
-  //                   {"list", {1, 0, 2}},
-  //                   {"object", {{"currency", "USD"},
-  //{"value", 42.99}}}};
-  // JSON_Data q(std::forward<int>(13));
-  // q = 13;
-  // int asd = 13;
-  // JSON_Data(std::forward<int>(std::move(asd)));
-  // std::pair<std::string, JSON_Data>("good", "13");
-  // std::map<std::string, test> a = {
-  //     {"goood", "13"}, {"bad", "13"}, {"sda", "false"}};
-  // convertor({{"goood", 13}, {"bad", 5}, {"sda", 17}});
-  //  JSON_Data m{"pi", {{"everything", 42}}};
-  //   std::pair<std::string, JSON_Data> m{{"everything", 42}};
-  //   std::pair<std::string, JSON_Data> p{"pi", {{"everything", 42}}};
-  //    std::vector<std::pair<std::string, JSON_Data>> s;
-  //     std::initializer_list<std::pair<const std::string,
-  //     std::variant<JSON_Data>>>
-  //         a = {{"pi", 3.141},
-  //              {"happy", true},
-  //              {"name", "Niels"},
-  //              {"nothing", nullptr}};
-  //      {"answer", {{"everything", 42}}},
-  //      {"list", {1, 0, 2}},
-  //      {"object", {{"currency", "USD"}, {"value", 42.99}}}};
-}
 
 void test_API() {
   JSON_Object j;
@@ -691,20 +633,15 @@ void test_API() {
   j["boolean"] = true;
   j["user"]["id"] = 10;
   j["user"]["name"] = "Nomango";
-
-  // JSON_Data arr = {1, 2, 3};
-  //  std::initializer_list<JSON_Data> a = {1, 2, 3};
-
-  // JSON_Object obj = {{"user", {{"id", 10}, {"name", "Nomango"}}}};
-  // JSON_Object lk = {{"key", "value"}, {"key2", "value2"}};
   JSON_Object obj2 = {
       {"nul", nullptr},
       {"number", 1},
       {"float", 1.3},
       {"boolean", false},
       {"array", {1, 2, true, 1.4}},
+      //{"array2", {1, 2, {1, 2, 3}}}, Not Support
       {"object", {{"key", "value"}, {"key2", "value2"}}},
-  };
+      {"object2", {{"key", "val"}, {"key2", {{"key3", "val"}}}}}};
   auto l = obj2;
 }
 
