@@ -632,7 +632,14 @@ void test_API() {
   j["string"] = "this is a string";
   j["boolean"] = true;
   j["user"]["id"] = 10;
-  j["user"]["name"] = "Nomango";
+  j["user"]["name"] = "Nomango";  //被转成bool类型了
+  EXPECT_EQ_INT(__LINE__, 1.0, j.get_number("number"));
+  EXPECT_EQ_INT(__LINE__, 1.5, j.get_number("float"));
+  EXPECT_EQ_INT(__LINE__, string("this is a string"), j.get_string("string"));
+  EXPECT_EQ_INT(__LINE__, true, j.get_bool("boolean"));
+  EXPECT_EQ_INT(__LINE__, 10.0, j.get_object("user").get_number("id"));
+  EXPECT_EQ_INT(__LINE__, string("Nomango"),
+                j.get_object("user").get_string("name"));
   JSON_Object obj2 = {
       {"nul", nullptr},
       {"number", 1},
@@ -642,7 +649,11 @@ void test_API() {
       //{"array2", {1, 2, {1, 2, 3}}}, Not Support
       {"object", {{"key", "value"}, {"key2", "value2"}}},
       {"object2", {{"key", "val"}, {"key2", {{"key3", "val"}}}}}};
-  auto l = obj2;
+  // auto l = obj2;
+  EXPECT_EQ_INT(__LINE__, nullptr, obj2.get_null("nul"));
+  EXPECT_EQ_INT(__LINE__, 1.0, obj2.get_number("number"));
+  EXPECT_EQ_INT(__LINE__, 1.3, obj2.get_number("float"));
+  EXPECT_EQ_INT(__LINE__, false, obj2.get_bool("boolean"));
 }
 
 int main(int argc, char const *argv[]) {

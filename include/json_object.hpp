@@ -64,7 +64,6 @@ class JSON_Ref {
   explicit JSON_Ref(bool d_bool) : data(d_bool) {}
   JSON_Ref(std::string d_string) : data(d_string) {}
   JSON_Ref(const char *ptr) : data(ptr) {}
-  //  JSON_Ref(std::initializer_list<std::pair<std::string, JSON_Data>> list);
   JSON_Ref(std::initializer_list<std::pair<std::string, JSON_Ref>> list);
   JSON_Ref(std::initializer_list<var> list) {
     std::vector<JSON_Data> d_array;
@@ -97,9 +96,9 @@ class JSON_Ref {
 class JSON_Object {
  public:
   explicit JSON_Object() = default;
-  JSON_Object(std::initializer_list<std::pair<std::string, JSON_Ref>> list);
+  JSON_Object(std::initializer_list<std::pair<std::string, JSON_Data>> list);
   JSON_Object &operator=(
-      std::initializer_list<std::pair<std::string, JSON_Ref>> list);
+      std::initializer_list<std::pair<std::string, JSON_Data>> list);
   inline void add(const std::string &key, const bool d_bool) {
     object.insert(key, JSON_Data(d_bool));
   }
@@ -204,11 +203,7 @@ class JSON_Object {
     return object.find(key);
   }
 
-  inline JSON_Data &operator[](std::string &&key) {
-    // is_key_valid(key);
-    // return object.find(key);
-    return operator[](key);
-  }
+  inline JSON_Data &operator[](std::string &&key) { return operator[](key); }
 
   inline std::string output() {
     auto data = object.get_Storage_In_Order();
@@ -221,7 +216,6 @@ class JSON_Object {
   }
 
  private:
-  // std::map<std::string, JSON_Data> object;
   JSON_Object_Storage object;
   inline void is_key_valid(const std::string &key) {
     if (object.is_key_invalid(key)) {
@@ -229,35 +223,7 @@ class JSON_Object {
     }
   }
   inline void is_key_valid(const std::string &&key) { is_key_valid(key); }
-
-  // JSON_Data convert_to_JSON_data(
-  //     std::variant<std::nullptr_t, bool, double, int, std::string, char *,
-  //                  std::vector<JSON_Data>, JSON_Object> &var) {
-  //   switch (var.index()) {
-  //     case 0:
-  //       return JSON_Data(std::get<std::nullptr_t>(var));
-  //     case 1:
-  //       return JSON_Data(std::get<bool>(var));
-  //     case 2:
-  //       return JSON_Data(std::get<double>(var));
-  //     case 3:
-  //       return JSON_Data(std::get<int>(var));
-  //     case 4:
-  //       return JSON_Data(std::get<std::string>(var));
-  //     case 5:
-  //       return JSON_Data(std::get<char *>(var));
-  //     case 6:
-  //       return JSON_Data(std::get<std::vector<JSON_Data>>(var));
-  //     case 7:
-  //       return JSON_Data(std::get<JSON_Object>(var));
-  //     default:
-  //       throw std::invalid_argument("wrong");
-  //   }
-  // }
 };
-
-// using var = std::variant<std::nullptr_t, bool, double, std::string,
-//                          std::vector<JSON_Data>, JSON_Object>;
 
 }  // namespace s2ujson
 #endif

@@ -12,12 +12,11 @@ using JSON_Object = s2ujson::JSON_Object;
 using JSON_Ref = s2ujson::JSON_Ref;
 
 JSON_Object::JSON_Object(
-    std::initializer_list<std::pair<std::string, JSON_Ref>> list) {
+    std::initializer_list<std::pair<std::string, JSON_Data>> list) {
   for (auto i : list) {
     if (i.first == "object") {
     }
-    object.insert(i.first, i.second.data);
-    // object.insert(i.first, JSON_Data(i.second));
+    object.insert(i.first, i.second);
   }
 }
 
