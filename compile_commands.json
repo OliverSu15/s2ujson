@@ -1,22 +1,7 @@
 [
 {
   "directory": "/home/oliversu/s2ujson/build",
-  "command": "/bin/c++  -I/home/oliversu/s2ujson/include -g -std=gnu++17 -o CMakeFiles/json_parser.dir/src/json_data.cpp.o -c /home/oliversu/s2ujson/src/json_data.cpp",
-  "file": "/home/oliversu/s2ujson/src/json_data.cpp"
-},
-{
-  "directory": "/home/oliversu/s2ujson/build",
-  "command": "/bin/c++  -I/home/oliversu/s2ujson/include -g -std=gnu++17 -o CMakeFiles/json_parser.dir/src/json_object.cpp.o -c /home/oliversu/s2ujson/src/json_object.cpp",
-  "file": "/home/oliversu/s2ujson/src/json_object.cpp"
-},
-{
-  "directory": "/home/oliversu/s2ujson/build",
-  "command": "/bin/c++  -I/home/oliversu/s2ujson/include -g -std=gnu++17 -o CMakeFiles/json_parser.dir/src/json_parser.cpp.o -c /home/oliversu/s2ujson/src/json_parser.cpp",
-  "file": "/home/oliversu/s2ujson/src/json_parser.cpp"
-},
-{
-  "directory": "/home/oliversu/s2ujson/build",
-  "command": "/bin/c++  -I/home/oliversu/s2ujson/include -g -std=gnu++17 -o CMakeFiles/json_parser.dir/src/main.cpp.o -c /home/oliversu/s2ujson/src/main.cpp",
-  "file": "/home/oliversu/s2ujson/src/main.cpp"
+  "command": "/bin/c++  -I/home/oliversu/s2ujson/include -g -std=gnu++17 -o CMakeFiles/json_parser.dir/src/test.cpp.o -c /home/oliversu/s2ujson/src/test.cpp",
+  "file": "/home/oliversu/s2ujson/src/test.cpp"
 }
 ]

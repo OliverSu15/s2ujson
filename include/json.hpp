@@ -1,6 +1,16 @@
+/**
+ * @file json.hpp
+ * @author OliverSu15 (OliverSu15@outlook.com)
+ * @brief
+ * @version 1.0
+ * @date 2022-03-06
+ *
+ * @copyright Copyright (c) 2022
+ *
+ */
+
 #ifndef _JSON_HPP_
 #define _JSON_HPP_
-
 #include <cctype>
 #include <cstddef>
 #include <ctime>
@@ -25,7 +35,7 @@ class JSON_Object;
  * @brief used to represent all the data type in JSON
  *
  */
-enum class data_type { NULL_DATA, TRUE, FALSE, NUMBER, STRING, ARRAY, OBJECT };
+enum class value_t { NULL_DATA, TRUE, FALSE, NUMBER, STRING, ARRAY, OBJECT };
 
 /**
  * @brief The class which holds all the data, include 'Object'.
@@ -68,33 +78,44 @@ class JSON_Data {
     return *std::get<std::shared_ptr<JSON_Object>>(data);
   }
 
+  // All the type check
+  inline const value_t &get_type() { return type; };
+  inline bool is_null() const { return type == value_t::NULL_DATA; }
+  inline bool is_boolean() const {
+    return (type == value_t::TRUE || type == value_t::FALSE);
+  }
+  inline bool is_number() const { return type == value_t::NUMBER; }
+  inline bool is_string() const { return type == value_t::STRING; }
+  inline bool is_array() const { return type == value_t::ARRAY; }
+  inline bool is_object() const { return type == value_t::OBJECT; }
+
   // All the setter
   inline void set(const std::nullptr_t) {
-    type = data_type::NULL_DATA;
+    type = value_t::NULL_DATA;
     data = nullptr;
   }
   inline void set(bool d_bool) {
     if (d_bool) {
-      type = data_type::TRUE;
+      type = value_t::TRUE;
     } else {
-      type = data_type::FALSE;
+      type = value_t::FALSE;
     }
     data = d_bool;
   }
   inline void set(double d_number) {
-    type = data_type::NUMBER;
+    type = value_t::NUMBER;
     data = d_number;
   }
   inline void set(const std::string &d_string) {
-    type = data_type::STRING;
+    type = value_t::STRING;
     data = d_string;
   }
   inline void set(const std::vector<JSON_Data> &d_array) {
-    type = data_type::ARRAY;
+    type = value_t::ARRAY;
     data = d_array;
   }
   inline void set(const JSON_Object &d_object) {
-    type = data_type::OBJECT;
+    type = value_t::OBJECT;
     data = std::make_shared<JSON_Object>(d_object);
   }
 
@@ -108,6 +129,7 @@ class JSON_Data {
   inline const T &get() {
     return std::get<T>(data);
   }
+
   // All overloaded `=` to do `object["key"] = something` or `object["key"] =
   // {{"name", "val"}}` or `object["key"] = {1, "good", false, nullptr}`
   inline JSON_Data &operator=(std::nullptr_t) {
@@ -161,7 +183,7 @@ class JSON_Data {
    * @brief output the JSON string of this data
    * @return std::string
    */
-  std::string output();
+  std::string to_string();
 
  private:
   /**
@@ -169,7 +191,7 @@ class JSON_Data {
    *
    * @return std::string
    */
-  std::string array_output();
+  std::string array_to_string();
   /**
    * @brief get the data out of var
    *
@@ -182,7 +204,7 @@ class JSON_Data {
   std::variant<std::nullptr_t, bool, double, std::string,
                std::vector<JSON_Data>, std::shared_ptr<JSON_Object>>
       data;
-  data_type type = data_type::NULL_DATA;
+  value_t type = value_t::NULL_DATA;
 };
 
 /**
@@ -229,6 +251,13 @@ class JSON_Object_Storage {
 };
 
 class JSON_Object {
+ public:
+  using iterator = std::map<std::string, JSON_Data>::iterator;
+  using const_iterator = std::map<std::string, JSON_Data>::const_iterator;
+  using reverse_iterator = std::map<std::string, JSON_Data>::reverse_iterator;
+  using const_reverse_iterator =
+      std::map<std::string, JSON_Data>::const_reverse_iterator;
+
  public:
   // All Constructor
   explicit JSON_Object() = default;
@@ -292,19 +321,16 @@ class JSON_Object {
   inline std::nullptr_t get_null(const std::string &&key) {
     return get_null(key);
   }
-
   inline bool get_bool(const std::string &key) {
     is_key_valid(key);
     return object.find(key)->second.get_bool();
   }
   inline bool get_bool(const std::string &&key) { return get_bool(key); }
-
   inline double get_number(const std::string &key) {
     is_key_valid(key);
     return object.find(key)->second.get_number();
   }
   inline double get_number(std::string &&key) { return get_number(key); }
-
   inline const std::string &get_string(const std::string &key) {
     is_key_valid(key);
     return object.find(key)->second.get_string();
@@ -312,7 +338,6 @@ class JSON_Object {
   inline const std::string &get_string(std::string &&key) {
     return get_string(key);
   }
-
   inline const std::vector<JSON_Data> &get_array(const std::string &key) {
     is_key_valid(key);
     return object.find(key)->second.get_array();
@@ -320,12 +345,22 @@ class JSON_Object {
   inline const std::vector<JSON_Data> &get_array(std::string &&key) {
     return get_array(key);
   }
-
   inline JSON_Object &get_object(const std::string &key) {
     is_key_valid(key);
     return (object.find(key)->second.get_object());
   }
   inline JSON_Object &get_object(std::string &&key) { return get_object(key); }
+  /**
+   * @brief a special setter which used to provied usage like
+   * `object.get<bool>("key")`
+   *
+   * @tparam T
+   * @return const T&
+   */
+  template <typename T>
+  inline const T &get(const std::string &key) {
+    return object.find(key)->second.get<T>();
+  }
 
   // All operator
   inline JSON_Data &operator[](const std::string &key) {
@@ -354,13 +389,39 @@ class JSON_Object {
    *
    * @return std::string
    */
-  inline std::string output() {
+  inline std::string to_string() {
     std::string output_string = "{";
     for (auto i : object) {
-      output_string += ("\"" + i.first + "\"" + ":" + i.second.output() + ",");
+      output_string +=
+          ("\"" + i.first + "\"" + ":" + i.second.to_string() + ",");
     }
     output_string.push_back('}');
     return output_string;
+  }
+
+  // All STL-like access
+  // iterator
+  inline iterator begin() { return object.begin(); }
+  inline const_iterator cbegin() const { return object.cbegin(); };
+  inline iterator end() { return object.end(); }
+  inline const_iterator cend() const { return object.cend(); }
+  inline reverse_iterator rbegin() { return object.rbegin(); }
+  inline const_reverse_iterator crbegin() const { return object.crbegin(); }
+  inline reverse_iterator rend() { return object.rend(); }
+  inline const_reverse_iterator crend() const { return object.crend(); }
+  // capacity
+  inline bool empty() const { return object.empty(); }
+  inline size_t size() const { return object.size(); };
+  inline size_t max_size() const { return object.max_size(); }
+  // modifer
+  inline void clear() { object.clear(); }
+  // finder
+  inline iterator find(const std::string &key) { return object.find(key); }
+  inline const_iterator find(const std::string &key) const {
+    return object.find(key);
+  }
+  inline size_t count(const std::string &key) const {
+    return object.count(key);
   }
 
  private:
@@ -408,7 +469,7 @@ JSON_Data &JSON_Data::operator=(std::initializer_list<var> list) {
 }
 
 JSON_Data &JSON_Data::operator[](std::string &key) {
-  if (type != data_type::OBJECT) {
+  if (type != value_t::OBJECT) {
     // if not exist create one
     set(JSON_Object());
   }
@@ -416,31 +477,31 @@ JSON_Data &JSON_Data::operator[](std::string &key) {
 }
 JSON_Data &JSON_Data::operator[](std::string &&key) { return operator[](key); }
 
-std::string JSON_Data::output() {
+std::string JSON_Data::to_string() {
   switch (type) {
-    case data_type::NULL_DATA:
+    case value_t::NULL_DATA:
       return "null";
-    case data_type::TRUE:
+    case value_t::TRUE:
       return "true";
-    case data_type::FALSE:
+    case value_t::FALSE:
       return "false";
-    case data_type::NUMBER:
+    case value_t::NUMBER:
       return std::to_string(get<double>());
-    case data_type::STRING:
+    case value_t::STRING:
       return "\"" + get_string() + "\"";
-    case data_type::ARRAY:
-      return array_output();
-    case data_type::OBJECT:
-      return get_object().output();
+    case value_t::ARRAY:
+      return array_to_string();
+    case value_t::OBJECT:
+      return get_object().to_string();
     default:
       throw std::invalid_argument("not implented");
   }
 }
-std::string JSON_Data::array_output() {
+std::string JSON_Data::array_to_string() {
   std::string output_string = "[";
   auto array = get_array();
   for (auto i : array) {
-    output_string += (i.output() + ",");
+    output_string += (i.to_string() + ",");
   }
   output_string += "]";
   return output_string;
@@ -475,6 +536,7 @@ JSON_Object &JSON_Object::operator=(
   }
   return *this;
 }
+
 // Exception
 #define invalid_Unicode_HEX std::invalid_argument("Invalid Unicode HEX")
 #define invalid_HEX std::invalid_argument("invalid HEX")
@@ -993,4 +1055,5 @@ inline static JSON_Object JSON_parse_object(const std::string &&json) {
   return JSON_parse_object(json);
 }
 }  // namespace s2ujson
+
 #endif

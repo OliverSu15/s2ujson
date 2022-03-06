@@ -10,8 +10,7 @@
 #include <variant>
 #include <vector>
 
-#include "json_data.h"
-#include "json_parser.hpp"
+#include "json.hpp"
 
 using namespace s2ujson;
 // TODO make the API similar to JSON for Modern C++
@@ -29,31 +28,31 @@ void EXPECT_EQ_BASE(bool equality, int line_num, T expect, T actual) {
   }
 }
 template <typename T>
-void EXPECT_EXCEPTION(int line_num, std::string json, data_type type,
+void EXPECT_EXCEPTION(int line_num, std::string json, value_t type,
                       T expected) try {
   static_assert(std::is_base_of<std::exception, T>::value,
                 "T is not a exception");
   test_count++;
   switch (type) {
-    case data_type::NULL_DATA:
+    case value_t::NULL_DATA:
       JSON_parse_null(json);
       break;
-    case data_type::TRUE:
+    case value_t::TRUE:
       JSON_parse_true(json);
       break;
-    case data_type::FALSE:
+    case value_t::FALSE:
       JSON_parse_false(json);
       break;
-    case data_type::NUMBER:
+    case value_t::NUMBER:
       JSON_parse_number(json);
       break;
-    case data_type::STRING:
+    case value_t::STRING:
       JSON_parse_string(json);
       break;
-    case data_type::ARRAY:
+    case value_t::ARRAY:
       JSON_parse_array(json);
       break;
-    case data_type::OBJECT:
+    case value_t::OBJECT:
       JSON_parse_object(json);
       break;
   }
@@ -75,19 +74,19 @@ void EXPECT_EQ_INT(int line_num, T expect, T actual) {
 
 void test_parse_null() {
   EXPECT_EQ_INT(__LINE__, nullptr, JSON_parse_null("null"));
-  EXPECT_EXCEPTION(__LINE__, "nall", data_type::NULL_DATA,
+  EXPECT_EXCEPTION(__LINE__, "nall", value_t::NULL_DATA,
                    std::invalid_argument("literial \"null\" is not correct"));
 }
 
 void test_parse_true() {
   EXPECT_EQ_INT(__LINE__, true, JSON_parse_true("true"));
-  EXPECT_EXCEPTION(__LINE__, "taue", data_type::TRUE,
+  EXPECT_EXCEPTION(__LINE__, "taue", value_t::TRUE,
                    std::invalid_argument("literial \"true\" is not correct"));
 }
 
 void test_parse_false() {
   EXPECT_EQ_INT(__LINE__, false, JSON_parse_false("false"));
-  EXPECT_EXCEPTION(__LINE__, "fulsr", data_type::FALSE,
+  EXPECT_EXCEPTION(__LINE__, "fulsr", value_t::FALSE,
                    std::invalid_argument("literial \"false\" is not correct"));
 }
 
@@ -158,48 +157,48 @@ void test_parse_number() {
   TEST_NUMBER(__LINE__, -1.7976931348623157e+308, ("-1.7976931348623157e+308"));
 }
 void test_parse_number_out_of_range() {
-  EXPECT_EXCEPTION(__LINE__, "1e-10000", data_type::NUMBER,
+  EXPECT_EXCEPTION(__LINE__, "1e-10000", value_t::NUMBER,
                    std::out_of_range("stod"));
-  EXPECT_EXCEPTION(__LINE__, "4.9406564584124654e-324", data_type::NUMBER,
+  EXPECT_EXCEPTION(__LINE__, "4.9406564584124654e-324", value_t::NUMBER,
                    std::out_of_range("stod"));
-  EXPECT_EXCEPTION(__LINE__, "-4.9406564584124654e-324", data_type::NUMBER,
+  EXPECT_EXCEPTION(__LINE__, "-4.9406564584124654e-324", value_t::NUMBER,
                    std::out_of_range("stod"));
-  EXPECT_EXCEPTION(__LINE__, "2.2250738585072009e-308", data_type::NUMBER,
+  EXPECT_EXCEPTION(__LINE__, "2.2250738585072009e-308", value_t::NUMBER,
                    std::out_of_range("stod"));
-  EXPECT_EXCEPTION(__LINE__, "-2.2250738585072009e-308", data_type::NUMBER,
+  EXPECT_EXCEPTION(__LINE__, "-2.2250738585072009e-308", value_t::NUMBER,
                    std::out_of_range("stod"));
-  EXPECT_EXCEPTION(__LINE__, "1e309", data_type::NUMBER,
+  EXPECT_EXCEPTION(__LINE__, "1e309", value_t::NUMBER,
                    std::out_of_range("stod"));
-  EXPECT_EXCEPTION(__LINE__, "-1e309", data_type::NUMBER,
+  EXPECT_EXCEPTION(__LINE__, "-1e309", value_t::NUMBER,
                    std::out_of_range("stod"));
 }
 
 void test_parse_invalid_argument() {
-  EXPECT_EXCEPTION(__LINE__, "+0", data_type::NUMBER,
+  EXPECT_EXCEPTION(__LINE__, "+0", value_t::NUMBER,
                    std::invalid_argument("number is not correct"));
-  EXPECT_EXCEPTION(__LINE__, "+1", data_type::NUMBER,
+  EXPECT_EXCEPTION(__LINE__, "+1", value_t::NUMBER,
                    std::invalid_argument("number is not correct"));
   EXPECT_EXCEPTION(
-      __LINE__, ".123", data_type::NUMBER,
+      __LINE__, ".123", value_t::NUMBER,
       std::invalid_argument(
           "number is not correct")); /* at least one digit before '.' */
   EXPECT_EXCEPTION(
-      __LINE__, "1.", data_type::NUMBER,
+      __LINE__, "1.", value_t::NUMBER,
       std::invalid_argument(
           "number is not correct")); /* at least one digit after '.' */
-  EXPECT_EXCEPTION(__LINE__, "INF", data_type::NUMBER,
+  EXPECT_EXCEPTION(__LINE__, "INF", value_t::NUMBER,
                    std::invalid_argument("number is not correct"));
-  EXPECT_EXCEPTION(__LINE__, "inf", data_type::NUMBER,
+  EXPECT_EXCEPTION(__LINE__, "inf", value_t::NUMBER,
                    std::invalid_argument("number is not correct"));
-  EXPECT_EXCEPTION(__LINE__, "NAN", data_type::NUMBER,
+  EXPECT_EXCEPTION(__LINE__, "NAN", value_t::NUMBER,
                    std::invalid_argument("number is not correct"));
-  EXPECT_EXCEPTION(__LINE__, "nan", data_type::NUMBER,
+  EXPECT_EXCEPTION(__LINE__, "nan", value_t::NUMBER,
                    std::invalid_argument("number is not correct"));
-  EXPECT_EXCEPTION(__LINE__, std::string("0123"), data_type::NUMBER,
+  EXPECT_EXCEPTION(__LINE__, std::string("0123"), value_t::NUMBER,
                    std::invalid_argument("number is not correct"));
-  EXPECT_EXCEPTION(__LINE__, "0x0", data_type::NUMBER,
+  EXPECT_EXCEPTION(__LINE__, "0x0", value_t::NUMBER,
                    std::invalid_argument("number is not correct"));
-  EXPECT_EXCEPTION(__LINE__, "0x123", data_type::NUMBER,
+  EXPECT_EXCEPTION(__LINE__, "0x123", value_t::NUMBER,
                    std::invalid_argument("number is not correct"));
 }
 
@@ -249,65 +248,65 @@ void test_parse_string() {
 
 void test_parse_string_error() {
   // LEPT_PARSE_MISS_QUOTATION_MARK
-  EXPECT_EXCEPTION(__LINE__, "\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"", value_t::STRING,
                    std::invalid_argument("miss quotation mark"));
-  EXPECT_EXCEPTION(__LINE__, "\"abc", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"abc", value_t::STRING,
                    std::invalid_argument("miss quotation mark"));
 
   // LEPT_PARSE_INVALID_STRING_ESCAPE
-  EXPECT_EXCEPTION(__LINE__, "\"\\v\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\v\"", value_t::STRING,
                    std::invalid_argument("invalid string escape"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\'\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\'\"", value_t::STRING,
                    std::invalid_argument("invalid string escape"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\0\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\0\"", value_t::STRING,
                    std::invalid_argument("invalid string escape"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\x12\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\x12\"", value_t::STRING,
                    std::invalid_argument("invalid string escape"));
 
   // LEPT_PARSE_INVALID_STRING_CHAR
-  EXPECT_EXCEPTION(__LINE__, "\"\x01\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\x01\"", value_t::STRING,
                    std::invalid_argument("invalid string char"));
-  EXPECT_EXCEPTION(__LINE__, "\"\x1F\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\x1F\"", value_t::STRING,
                    std::invalid_argument("invalid string char"));
 
   // LEPT_PARSE_INVALID_UNICODE_HEX
-  EXPECT_EXCEPTION(__LINE__, "\"\\u\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\u\"", value_t::STRING,
                    std::invalid_argument("Invalid Unicode HEX"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\u0\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\u0\"", value_t::STRING,
                    std::invalid_argument("Invalid Unicode HEX"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\u01\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\u01\"", value_t::STRING,
                    std::invalid_argument("Invalid Unicode HEX"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\u012\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\u012\"", value_t::STRING,
                    std::invalid_argument("Invalid Unicode HEX"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\u/000\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\u/000\"", value_t::STRING,
                    std::invalid_argument("Invalid Unicode HEX"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\uG000\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\uG000\"", value_t::STRING,
                    std::invalid_argument("Invalid Unicode HEX"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\u0/00\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\u0/00\"", value_t::STRING,
                    std::invalid_argument("Invalid Unicode HEX"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\u0G00\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\u0G00\"", value_t::STRING,
                    std::invalid_argument("Invalid Unicode HEX"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\u00/0\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\u00/0\"", value_t::STRING,
                    std::invalid_argument("Invalid Unicode HEX"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\u00G0\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\u00G0\"", value_t::STRING,
                    std::invalid_argument("Invalid Unicode HEX"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\u000/\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\u000/\"", value_t::STRING,
                    std::invalid_argument("Invalid Unicode HEX"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\u000G\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\u000G\"", value_t::STRING,
                    std::invalid_argument("Invalid Unicode HEX"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\u 123\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\u 123\"", value_t::STRING,
                    std::invalid_argument("Invalid Unicode HEX"));
 
   // LEPT_PARSE_INVALID_UNICODE_SURROGATE
-  EXPECT_EXCEPTION(__LINE__, "\"\\uD800\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\uD800\"", value_t::STRING,
                    std::invalid_argument("invalid unicode surrogate"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\uDBFF\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\uDBFF\"", value_t::STRING,
                    std::invalid_argument("invalid unicode surrogate"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\uD800\\\\\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\uD800\\\\\"", value_t::STRING,
                    std::invalid_argument("invalid unicode surrogate"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\uD800\\uDBFF\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\uD800\\uDBFF\"", value_t::STRING,
                    std::invalid_argument("invalid unicode surrogate"));
-  EXPECT_EXCEPTION(__LINE__, "\"\\uD800\\uE000\"", data_type::STRING,
+  EXPECT_EXCEPTION(__LINE__, "\"\\uD800\\uE000\"", value_t::STRING,
                    std::invalid_argument("invalid unicode surrogate"));
 }
 
@@ -343,7 +342,7 @@ void test_parse_array() {
   EXPECT_EQ_INT(__LINE__, 1E10, array[8].get_number());
   EXPECT_EQ_INT(__LINE__, 1e10, array[9].get_number());
 
-  EXPECT_EXCEPTION(__LINE__, "[\"a\", nul]", data_type::ARRAY,
+  EXPECT_EXCEPTION(__LINE__, "[\"a\", nul]", value_t::ARRAY,
                    std::invalid_argument("literial \"null\" is not correct"));
 }
 
