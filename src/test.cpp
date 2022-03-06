@@ -552,14 +552,16 @@ void test_parse_object() {
 
 void test_API() {
   JSON_Object j;
+  j["null"] = nullptr;
   j["number"] = 1;
   j["float"] = 1.5;
   j["string"] = "this is a string";
   j["boolean"] = true;
   j["array"] = {1, "good", false, nullptr};
-  j["animal"] = {{"name", "deagon"}};
+  j["animal"] = {{"name", "dragon"}};
   j["user"]["id"] = 10;
-  j["user"]["name"] = "Nomango";  //被转成bool类型了
+  j["user"]["name"] = "Nomango";
+  EXPECT_EQ_INT(__LINE__, nullptr, j.get_null("null"));
   EXPECT_EQ_INT(__LINE__, 1.0, j.get_number("number"));
   EXPECT_EQ_INT(__LINE__, 1.5, j.get_number("float"));
   EXPECT_EQ_INT(__LINE__, std::string("this is a string"),
@@ -578,10 +580,10 @@ void test_API() {
       {"object", {{"key", "value"}, {"key2", "value2"}}},
       {"object2", {{"key", "val"}, {"key2", {{"key3", "val"}}}}}};
   // auto l = obj2;
-  EXPECT_EQ_INT(__LINE__, nullptr, obj2.get_null("nul"));
-  EXPECT_EQ_INT(__LINE__, 1.0, obj2.get_number("number"));
-  EXPECT_EQ_INT(__LINE__, 1.3, obj2.get_number("float"));
-  EXPECT_EQ_INT(__LINE__, false, obj2.get_bool("boolean"));
+  EXPECT_EQ_INT(__LINE__, nullptr, obj2.get<std::nullptr_t>("nul"));
+  EXPECT_EQ_INT(__LINE__, 1.0, obj2.get<double>("number"));
+  EXPECT_EQ_INT(__LINE__, 1.3, obj2.get<double>("float"));
+  EXPECT_EQ_INT(__LINE__, false, obj2.get<bool>("boolean"));
 }
 
 int main(int argc, char const *argv[]) {

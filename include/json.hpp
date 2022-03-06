@@ -210,7 +210,7 @@ class JSON_Data {
 /**
  * @brief a working `data structure` to let the user can read the data in the
  * order they added
- *
+ * @deprecated working in progress
  */
 class JSON_Object_Storage {
  public:
