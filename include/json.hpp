@@ -428,6 +428,10 @@ class JSON_Object {
     return object.count(key);
   }
 
+  inline bool exist(const std::string &key) const {
+    return object.find(key) != object.end();
+  }
+
  private:
   inline void is_key_valid(const std::string &key) {
     if (object.find(key) == object.end()) {
