@@ -267,51 +267,51 @@ class JSON_Object {
   inline void add(const std::string &key) {
     object.insert(std::make_pair(key, JSON_Data()));
   }
-  inline void add(const std::string &&key) { add(key); }
+  // inline void add(const std::string &&key) { add(key); }
   inline void add(const std::string &key, std::nullptr_t) {
     object.insert(std::make_pair(key, JSON_Data()));
   }
-  inline void add(const std::string &&key, std::nullptr_t) {
-    add(key, nullptr);
-  }
+  // inline void add(const std::string &&key, std::nullptr_t) {
+  //   add(key, nullptr);
+  // }
   inline void add(const std::string &key, const bool d_bool) {
     object.insert(std::make_pair(key, JSON_Data(d_bool)));
   }
-  inline void add(const std::string &&key, const bool d_bool) {
-    add(key, d_bool);
-  }
+  // inline void add(const std::string &&key, const bool d_bool) {
+  //   add(key, d_bool);
+  // }
   inline void add(const std::string &key, const double d_number) {
     object.insert(std::make_pair(key, JSON_Data(d_number)));
   }
-  inline void add(const std::string &&key, const double d_number) {
-    add(key, d_number);
-  }
+  // inline void add(const std::string &&key, const double d_number) {
+  //   add(key, d_number);
+  // }
   inline void add(const std::string &key, const std::string &d_string) {
     object.insert(std::make_pair(key, JSON_Data(d_string)));
   }
-  inline void add(const std::string &&key, const std::string &d_string) {
-    add(key, d_string);
-  }
+  // inline void add(const std::string &&key, const std::string &d_string) {
+  //   add(key, d_string);
+  // }
   inline void add(const std::string &key,
                   const std::vector<JSON_Data> &d_array) {
     object.insert(std::make_pair(key, JSON_Data(d_array)));
   }
-  inline void add(const std::string &&key,
-                  const std::vector<JSON_Data> &d_array) {
-    add(key, d_array);
-  }
+  // inline void add(const std::string &&key,
+  //                 const std::vector<JSON_Data> &d_array) {
+  //   add(key, d_array);
+  // }
   inline void add(const std::string &key, const JSON_Object &d_object) {
     object.insert(std::make_pair(key, JSON_Data(d_object)));
   }
-  inline void add(const std::string &&key, const JSON_Object &d_object) {
-    add(key, d_object);
-  }
+  // inline void add(const std::string &&key, const JSON_Object &d_object) {
+  //   add(key, d_object);
+  // }
   inline void add(const std::string &key, const JSON_Data &d_data) {
     object.insert(std::make_pair(key, d_data));
   }
-  inline void add(const std::string &&key, const JSON_Data &d_data) {
-    add(key, d_data);
-  }
+  // inline void add(const std::string &&key, const JSON_Data &d_data) {
+  //   add(key, d_data);
+  // }
 
   // All getter
   inline std::nullptr_t get_null(const std::string &key) {
