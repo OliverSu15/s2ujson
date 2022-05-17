@@ -281,6 +281,9 @@ class JSON_Object {
   // inline void add(const std::string &&key, const bool d_bool) {
   //   add(key, d_bool);
   // }
+  inline void add(const std::string &key, const int d_number) {
+    object.insert(std::make_pair(key, JSON_Data(d_number)));
+  }
   inline void add(const std::string &key, const double d_number) {
     object.insert(std::make_pair(key, JSON_Data(d_number)));
   }
