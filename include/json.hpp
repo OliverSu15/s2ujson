@@ -1071,8 +1071,9 @@ inline static JSON_Object JSON_parse_object(const std::string &json) {
 inline static JSON_Object JSON_parse_object(const std::string &&json) {
   return JSON_parse_object(json);
 }
+}  // namespace s2ujson
 
-static JSON_Data _JSON_parse(std::string::const_iterator &begin) {
+static s2ujson::JSON_Data _JSON_parse(std::string::const_iterator &begin) {
   auto iter = begin;
   for (; *iter == ' '; iter++)
     ;
@@ -1082,15 +1083,13 @@ static JSON_Data _JSON_parse(std::string::const_iterator &begin) {
     return _JSON_parse_array_iter(iter);
   }
 }
-static JSON_Data _JSON_parse(std::string::const_iterator &&begin) {
+static s2ujson::JSON_Data _JSON_parse(std::string::const_iterator &&begin) {
   return _JSON_parse(begin);
 }
 namespace s2ujson {
 inline static JSON_Data JSON_parse(const std::string &json) {
   return _JSON_parse(json.cbegin());
 }
-}  // namespace s2ujson
-
 }  // namespace s2ujson
 
 #endif
