@@ -206,50 +206,51 @@ class JSON_Data {
       data;
   value_t type = value_t::NULL_DATA;
 };
+}  // namespace s2ujson
 
 /**
  * @brief a working `data structure` to let the user can read the data in the
  * order they added
  * @deprecated working in progress
  */
-class JSON_Object_Storage {
- public:
-  explicit JSON_Object_Storage() = default;
-  inline void insert(const std::string &key, JSON_Data &data) {
-    key_to_pos.insert(std::make_pair(key, key_to_pos.size()));
-    if (real_data.size() >= key_to_pos.size()) {
-      real_data[key_to_pos.size() - 1] = data;
-    } else {
-      real_data.push_back(data);
-    }
-  }
-  inline void insert(const std::string &key, JSON_Data &&data) {
-    insert(key, data);
-  }
+// class JSON_Object_Storage {
+//  public:
+//   explicit JSON_Object_Storage() = default;
+//   inline void insert(const std::string &key, JSON_Data &data) {
+//     key_to_pos.insert(std::make_pair(key, key_to_pos.size()));
+//     if (real_data.size() >= key_to_pos.size()) {
+//       real_data[key_to_pos.size() - 1] = data;
+//     } else {
+//       real_data.push_back(data);
+//     }
+//   }
+//   inline void insert(const std::string &key, JSON_Data &&data) {
+//     insert(key, data);
+//   }
 
-  inline JSON_Data &find(const std::string &key) {
-    return real_data[key_to_pos.find(key)->second];
-  }
+//   inline JSON_Data &find(const std::string &key) {
+//     return real_data[key_to_pos.find(key)->second];
+//   }
 
-  inline JSON_Data &find(const int pos) { return real_data[pos]; }
+//   inline JSON_Data &find(const int pos) { return real_data[pos]; }
 
-  inline bool is_key_invalid(const std::string &key) {
-    return key_to_pos.find(key) == key_to_pos.end();
-  }
+//   inline bool is_key_invalid(const std::string &key) {
+//     return key_to_pos.find(key) == key_to_pos.end();
+//   }
 
-  std::vector<std::pair<std::string, JSON_Data>> get_Storage_In_Order() {
-    std::vector<std::pair<std::string, JSON_Data>> result(key_to_pos.size());
-    for (auto i : key_to_pos) {
-      result[i.second] = std::make_pair(i.first, real_data[i.second]);
-    }
-    return result;
-  }
+//   std::vector<std::pair<std::string, JSON_Data>> get_Storage_In_Order() {
+//     std::vector<std::pair<std::string, JSON_Data>> result(key_to_pos.size());
+//     for (auto i : key_to_pos) {
+//       result[i.second] = std::make_pair(i.first, real_data[i.second]);
+//     }
+//     return result;
+//   }
 
- private:
-  std::map<std::string, int> key_to_pos;
-  std::vector<JSON_Data> real_data;
-};
-
+//  private:
+//   std::map<std::string, int> key_to_pos;
+//   std::vector<JSON_Data> real_data;
+// };
+namespace s2ujson {
 class JSON_Object {
  public:
   using iterator = std::map<std::string, JSON_Data>::iterator;
@@ -536,7 +537,7 @@ JSON_Object &JSON_Object::operator=(
   }
   return *this;
 }
-
+}  // namespace s2ujson
 // Exception
 #define invalid_Unicode_HEX std::invalid_argument("Invalid Unicode HEX")
 #define invalid_HEX std::invalid_argument("invalid HEX")
@@ -615,6 +616,7 @@ static bool _JSON_parse_true_iter(std::string::const_iterator &begin) {
 inline static bool _JSON_parse_true_iter(std::string::const_iterator &&begin) {
   return _JSON_parse_true_iter(begin);
 }
+namespace s2ujson {
 /**
  * @brief private function that only exist for testing
  *
@@ -629,6 +631,7 @@ inline static bool JSON_parse_true(const std::string &json) {
 inline static bool JSON_parse_true(const std::string &&json) {
   return JSON_parse_true(json);
 }
+}  // namespace s2ujson
 
 /**
  * @brief private function that parse `false` type in JSON
@@ -652,6 +655,7 @@ bool _JSON_parse_false_iter(std::string::const_iterator &begin) {
 inline static bool _JSON_parse_false_iter(std::string::const_iterator &&begin) {
   return _JSON_parse_false_iter(begin);
 }
+namespace s2ujson {
 /**
  * @brief private function that only exist for testing
  *
@@ -665,7 +669,7 @@ inline static bool JSON_parse_false(const std::string &json) {
 inline static bool JSON_parse_false(const std::string &&json) {
   return JSON_parse_false(json);
 }
-
+}  // namespace s2ujson
 /**
  * @brief private function that parse `null` type in JSON
  *
@@ -689,6 +693,7 @@ inline static std::nullptr_t _JSON_parse_null_iter(
     std::string::const_iterator &&begin) {
   return _JSON_parse_null_iter(begin);
 }
+namespace s2ujson {
 /**
  * @brief private function that only exist for testing
  *
@@ -701,7 +706,7 @@ inline static std::nullptr_t JSON_parse_null(const std::string &json) {
 inline static std::nullptr_t JSON_parse_null(const std::string &&json) {
   return JSON_parse_null(json);
 }
-
+}  // namespace s2ujson
 /**
  * @brief private function that parse `number` type in JSON
  *
@@ -740,6 +745,7 @@ inline static double _JSON_parse_number_iter(
     std::string::const_iterator &&begin) {
   return _JSON_parse_number_iter(begin);
 }
+namespace s2ujson {
 /**
  * @brief private function that only exist for testing
  *
@@ -752,7 +758,7 @@ inline static double JSON_parse_number(const std::string &json) {
 inline static double JSON_parse_number(const std::string &&json) {
   return JSON_parse_number(json);
 }
-
+}  // namespace s2ujson
 /**
  * @brief private function that parse `string` type in JSON
  *
@@ -838,6 +844,7 @@ inline static std::string _JSON_parse_string_iter(
     std::string::const_iterator &&begin) {
   return _JSON_parse_string_iter(begin);
 }
+namespace s2ujson {
 /**
  * @brief private function that only exist for testing
  *
@@ -850,9 +857,10 @@ inline static std::string JSON_parse_string(const std::string &json) {
 inline static std::string JSON_parse_string(const std::string &&json) {
   return JSON_parse_string(json);
 }
-
+}  // namespace s2ujson
 // forward decalration, so it can be used in parsing array
-static JSON_Object _JSON_parse_object_iter(std::string::const_iterator &begin);
+static s2ujson::JSON_Object _JSON_parse_object_iter(
+    std::string::const_iterator &begin);
 
 /**
  * @brief private function that parse `array` type in JSON. use
@@ -861,33 +869,36 @@ static JSON_Object _JSON_parse_object_iter(std::string::const_iterator &begin);
  * @param begin
  * @return std::vector<JSON_Data>
  */
-static std::vector<JSON_Data> _JSON_parse_array_iter(
+static std::vector<s2ujson::JSON_Data> _JSON_parse_array_iter(
     std::string::const_iterator &begin) {
   auto iter = begin;
   if (*iter != '[') throw array_is_invalid;
   iter++;
   auto next_start_pos = iter;
   auto next_end_pos = iter;
-  std::vector<JSON_Data> array;
+  std::vector<s2ujson::JSON_Data> array;
   while (*iter != '\0') {
     switch (*iter) {
       case ']':
         begin = iter + 1;
         return array;
       case 'n': {
-        array.emplace_back(JSON_parse_null(std::string(iter, iter + 4)));
+        array.emplace_back(
+            s2ujson::JSON_parse_null(std::string(iter, iter + 4)));
         iter += 4;
         next_start_pos = next_end_pos = iter;
         break;
       }
       case 't': {
-        array.emplace_back(JSON_parse_true(std::string(iter, iter + 4)));
+        array.emplace_back(
+            s2ujson::JSON_parse_true(std::string(iter, iter + 4)));
         iter += 4;
         next_start_pos = next_end_pos = iter;
         break;
       }
       case 'f': {
-        array.emplace_back(JSON_parse_false(std::string(iter, iter + 5)));
+        array.emplace_back(
+            s2ujson::JSON_parse_false(std::string(iter, iter + 5)));
         iter += 5;
         next_start_pos = next_end_pos = iter;
         break;
@@ -914,10 +925,11 @@ static std::vector<JSON_Data> _JSON_parse_array_iter(
   }
   throw array_is_invalid;
 }
-inline static std::vector<JSON_Data> _JSON_parse_array_iter(
+inline static std::vector<s2ujson::JSON_Data> _JSON_parse_array_iter(
     std::string::const_iterator &&begin) {
   return _JSON_parse_array_iter(begin);
 }
+namespace s2ujson {
 /**
  * @brief parse `array` type in JSON.
  *
@@ -931,7 +943,7 @@ inline static std::vector<JSON_Data> JSON_parse_array(
     const std::string &&json) {
   return JSON_parse_array(json);
 }
-
+}  // namespace s2ujson
 /**
  * @brief private function that parse `array` type in JSON. use
  * `JSON_parse_object` instead
@@ -939,13 +951,14 @@ inline static std::vector<JSON_Data> JSON_parse_array(
  * @param begin
  * @return JSON_Object
  */
-static JSON_Object _JSON_parse_object_iter(std::string::const_iterator &begin) {
+static s2ujson::JSON_Object _JSON_parse_object_iter(
+    std::string::const_iterator &begin) {
   auto iter = begin;
   for (; *iter == ' '; iter++)
     ;
   if (*iter != '{') throw object_is_invalid;
   iter++;
-  JSON_Object object;
+  s2ujson::JSON_Object object;
   bool required_key = false;
   bool required_value = false;
   std::string key;
@@ -1038,10 +1051,11 @@ static JSON_Object _JSON_parse_object_iter(std::string::const_iterator &begin) {
   }
   throw object_is_invalid;
 }
-inline static JSON_Object _JSON_parse_object_iter(
+inline static s2ujson::JSON_Object _JSON_parse_object_iter(
     std::string::const_iterator &&begin) {
   return _JSON_parse_object_iter(begin);
 }
+namespace s2ujson {
 /**
  * @brief parse `object` type in JSON.
  *
@@ -1054,6 +1068,26 @@ inline static JSON_Object JSON_parse_object(const std::string &json) {
 inline static JSON_Object JSON_parse_object(const std::string &&json) {
   return JSON_parse_object(json);
 }
+
+static JSON_Data _JSON_parse(std::string::const_iterator &begin) {
+  auto iter = begin;
+  for (; *iter == ' '; iter++)
+    ;
+  if (*iter == '{') {
+    return _JSON_parse_object_iter(iter);
+  } else {
+    return _JSON_parse_array_iter(iter);
+  }
+}
+static JSON_Data _JSON_parse(std::string::const_iterator &&begin) {
+  return _JSON_parse(begin);
+}
+namespace s2ujson {
+inline static JSON_Data JSON_parse(const std::string &json) {
+  return _JSON_parse(json.cbegin());
+}
+}  // namespace s2ujson
+
 }  // namespace s2ujson
 
 #endif
