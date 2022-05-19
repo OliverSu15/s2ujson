@@ -456,7 +456,7 @@ inline const JSON_Object &JSON_Data::get<JSON_Object>() {
   return *std::get<std::shared_ptr<JSON_Object>>(data);
 }
 
-JSON_Data &JSON_Data::operator=(
+inline JSON_Data &JSON_Data::operator=(
     std::initializer_list<std::pair<std::string, JSON_Data>> list) {
   JSON_Object object;
   for (auto i : list) {
@@ -466,7 +466,7 @@ JSON_Data &JSON_Data::operator=(
   return *this;
 }
 
-JSON_Data &JSON_Data::operator=(std::initializer_list<var> list) {
+inline JSON_Data &JSON_Data::operator=(std::initializer_list<var> list) {
   std::vector<JSON_Data> array(list.size());
   int pos = 0;
   for (auto i : list) {
@@ -476,16 +476,18 @@ JSON_Data &JSON_Data::operator=(std::initializer_list<var> list) {
   return *this;
 }
 
-JSON_Data &JSON_Data::operator[](std::string &key) {
+inline JSON_Data &JSON_Data::operator[](std::string &key) {
   if (type != value_t::OBJECT) {
     // if not exist create one
     set(JSON_Object());
   }
   return (*std::get<std::shared_ptr<JSON_Object>>(data))[key];
 }
-JSON_Data &JSON_Data::operator[](std::string &&key) { return operator[](key); }
+inline JSON_Data &JSON_Data::operator[](std::string &&key) {
+  return operator[](key);
+}
 
-std::string JSON_Data::to_string() {
+inline std::string JSON_Data::to_string() {
   switch (type) {
     case value_t::NULL_DATA:
       return "null";
@@ -505,7 +507,7 @@ std::string JSON_Data::to_string() {
       throw std::invalid_argument("not implented");
   }
 }
-std::string JSON_Data::array_to_string() {
+inline std::string JSON_Data::array_to_string() {
   std::string output_string = "[";
   auto array = get_array();
   for (auto i : array) {
@@ -515,7 +517,7 @@ std::string JSON_Data::array_to_string() {
   return output_string;
 }
 
-JSON_Data JSON_Data::convert(var d_var) {
+inline JSON_Data JSON_Data::convert(var d_var) {
   switch (d_var.index()) {
     case 0:
       return JSON_Data(std::get<std::nullptr_t>(d_var));
@@ -532,12 +534,12 @@ JSON_Data JSON_Data::convert(var d_var) {
   }
 }
 
-JSON_Object::JSON_Object(
+inline JSON_Object::JSON_Object(
     std::initializer_list<std::pair<std::string, JSON_Data>> list) {
   operator=(list);
 }
 
-JSON_Object &JSON_Object::operator=(
+inline JSON_Object &JSON_Object::operator=(
     std::initializer_list<std::pair<std::string, JSON_Data>> list) {
   for (auto i : list) {
     object.insert(std::make_pair(i.first, i.second));
@@ -578,7 +580,7 @@ inline static unsigned int _JSON_parse_string_hex_helper(
 } catch (...) {
   throw invalid_Unicode_HEX;
 }
-static std::string _JSON_parse_string_utf_helper(unsigned int hex) {
+inline static std::string _JSON_parse_string_utf_helper(unsigned int hex) {
   std::string result;
   if (hex <= 0x7F) {
     result.push_back((hex & 0xff));
@@ -608,7 +610,7 @@ static std::string _JSON_parse_string_utf_helper(unsigned int hex) {
  * @return true
  * @return false
  */
-static bool _JSON_parse_true_iter(std::string::const_iterator &begin) {
+inline static bool _JSON_parse_true_iter(std::string::const_iterator &begin) {
   auto iter = begin;
   while (*iter == ' ') {
     iter++;
@@ -647,7 +649,7 @@ inline static bool JSON_parse_true(const std::string &&json) {
  * @return true
  * @return false
  */
-bool _JSON_parse_false_iter(std::string::const_iterator &begin) {
+inline bool _JSON_parse_false_iter(std::string::const_iterator &begin) {
   auto iter = begin;
   while (*iter == ' ') {
     iter++;
@@ -683,7 +685,7 @@ inline static bool JSON_parse_false(const std::string &&json) {
  * @param begin
  * @return std::nullptr_t
  */
-static std::nullptr_t _JSON_parse_null_iter(
+inline static std::nullptr_t _JSON_parse_null_iter(
     std::string::const_iterator &begin) {
   auto iter = begin;
   while (*iter == ' ') {
@@ -772,7 +774,8 @@ inline static double JSON_parse_number(const std::string &&json) {
  * @param begin
  * @return std::string
  */
-static std::string _JSON_parse_string_iter(std::string::const_iterator &begin) {
+inline static std::string _JSON_parse_string_iter(
+    std::string::const_iterator &begin) {
   auto iter = begin;
   std::string result = "";
   if (*iter == '\"') iter++;
@@ -866,7 +869,7 @@ inline static std::string JSON_parse_string(const std::string &&json) {
 }
 }  // namespace s2ujson
 // forward decalration, so it can be used in parsing array
-static s2ujson::JSON_Object _JSON_parse_object_iter(
+inline static s2ujson::JSON_Object _JSON_parse_object_iter(
     std::string::const_iterator &begin);
 
 /**
@@ -876,7 +879,7 @@ static s2ujson::JSON_Object _JSON_parse_object_iter(
  * @param begin
  * @return std::vector<JSON_Data>
  */
-static std::vector<s2ujson::JSON_Data> _JSON_parse_array_iter(
+inline static std::vector<s2ujson::JSON_Data> _JSON_parse_array_iter(
     std::string::const_iterator &begin) {
   auto iter = begin;
   if (*iter != '[') throw array_is_invalid;
@@ -958,7 +961,7 @@ inline static std::vector<JSON_Data> JSON_parse_array(
  * @param begin
  * @return JSON_Object
  */
-static s2ujson::JSON_Object _JSON_parse_object_iter(
+inline static s2ujson::JSON_Object _JSON_parse_object_iter(
     std::string::const_iterator &begin) {
   auto iter = begin;
   for (; *iter == ' '; iter++)
@@ -1077,7 +1080,8 @@ inline static JSON_Object JSON_parse_object(const std::string &&json) {
 }
 }  // namespace s2ujson
 
-static s2ujson::JSON_Data _JSON_parse(std::string::const_iterator &begin) {
+inline static s2ujson::JSON_Data _JSON_parse(
+    std::string::const_iterator &begin) {
   auto iter = begin;
   for (; *iter == ' '; iter++)
     ;
@@ -1087,7 +1091,8 @@ static s2ujson::JSON_Data _JSON_parse(std::string::const_iterator &begin) {
     return _JSON_parse_array_iter(iter);
   }
 }
-static s2ujson::JSON_Data _JSON_parse(std::string::const_iterator &&begin) {
+inline static s2ujson::JSON_Data _JSON_parse(
+    std::string::const_iterator &&begin) {
   return _JSON_parse(begin);
 }
 namespace s2ujson {
