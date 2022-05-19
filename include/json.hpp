@@ -13,6 +13,7 @@
 #define _JSON_HPP_
 #include <cctype>
 #include <cstddef>
+#include <cstdint>
 #include <ctime>
 #include <exception>
 #include <initializer_list>
@@ -52,9 +53,7 @@ class JSON_Data {
   constexpr JSON_Data() { set(nullptr); }
   constexpr explicit JSON_Data(const bool d_bool) { set(d_bool); }
   constexpr JSON_Data(const double d_number) { set(d_number); }
-  constexpr JSON_Data(const int d_number) {
-    set(static_cast<double>(d_number));
-  }
+  constexpr JSON_Data(const int d_number) { set(d_number); }
   constexpr JSON_Data(const std::string &d_string) { set(d_string); }
   constexpr JSON_Data(const char *ptr) { set(std::string(ptr)); }
   constexpr JSON_Data(const std::vector<JSON_Data> &d_array) { set(d_array); }
@@ -67,9 +66,20 @@ class JSON_Data {
   }
 
   // All the getter
-  inline std::nullptr_t &get_null() { return std::get<std::nullptr_t>(data); }
-  inline bool &get_bool() { return std::get<bool>(data); }
-  inline double &get_number() { return std::get<double>(data); }
+  inline std::nullptr_t get_null() { return std::get<std::nullptr_t>(data); }
+  inline bool get_bool() { return std::get<bool>(data); }
+  inline double get_double() {
+    if (std::holds_alternative<int>(data)) {
+      return static_cast<double>(std::get<int>(data));
+    }
+    return std::get<double>(data);
+  }
+  inline int get_int() {
+    if (std::holds_alternative<double>(data)) {
+      return static_cast<int>(std::get<double>(data));
+    }
+    return std::get<int>(data);
+  }
   inline std::string &get_string() { return std::get<std::string>(data); }
   inline std::vector<JSON_Data> &get_array() {
     return std::get<std::vector<JSON_Data>>(data);
@@ -103,6 +113,10 @@ class JSON_Data {
     data = d_bool;
   }
   inline void set(double d_number) {
+    type = value_t::NUMBER;
+    data = d_number;
+  }
+  inline void set(int d_number) {
     type = value_t::NUMBER;
     data = d_number;
   }
@@ -145,7 +159,8 @@ class JSON_Data {
     return *this;
   }
   inline JSON_Data &operator=(const int d_number) {
-    return operator=(static_cast<double>(d_number));
+    set(d_number);
+    return *this;
   }
   inline JSON_Data &operator=(const std::string &d_string) {
     set(d_string);
@@ -201,7 +216,7 @@ class JSON_Data {
   JSON_Data convert(var d_var);
 
  private:
-  std::variant<std::nullptr_t, bool, double, std::string,
+  std::variant<std::nullptr_t, bool, double, int, std::string,
                std::vector<JSON_Data>, std::shared_ptr<JSON_Object>>
       data;
   value_t type = value_t::NULL_DATA;
@@ -330,11 +345,16 @@ class JSON_Object {
     return object.find(key)->second.get_bool();
   }
   inline bool get_bool(const std::string &&key) { return get_bool(key); }
-  inline double get_number(const std::string &key) {
+  inline double get_double(const std::string &key) {
     is_key_valid(key);
-    return object.find(key)->second.get_number();
+    return object.find(key)->second.get_double();
   }
-  inline double get_number(std::string &&key) { return get_number(key); }
+  inline int get_int(const std::string &key) {
+    is_key_valid(key);
+    return object.find(key)->second.get_int();
+  }
+  inline double get_double(std::string &&key) { return get_double(key); }
+  inline double get_int(std::string &&key) { return get_int(key); }
   inline const std::string &get_string(const std::string &key) {
     is_key_valid(key);
     return object.find(key)->second.get_string();
@@ -496,7 +516,11 @@ inline std::string JSON_Data::to_string() {
     case value_t::FALSE:
       return "false";
     case value_t::NUMBER:
-      return std::to_string(get<double>());
+      if (std::holds_alternative<int>(data)) {
+        return std::to_string(get<int>());
+      } else {
+        return std::to_string(get<double>());
+      }
     case value_t::STRING:
       return "\"" + get_string() + "\"";
     case value_t::ARRAY:

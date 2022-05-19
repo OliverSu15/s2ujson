@@ -319,28 +319,28 @@ void test_parse_array() {
   EXPECT_EQ_INT(__LINE__, false, array[1].get_bool());
   EXPECT_EQ_INT(__LINE__, true, array[2].get_bool());
   EXPECT_EQ_INT(__LINE__, std::string("abc"), array[4].get_string());
-  EXPECT_EQ_INT(__LINE__, 123.0, array[3].get_number());
+  EXPECT_EQ_INT(__LINE__, 123.0, array[3].get_double());
 
   array = JSON_parse_array("[ [ ] , [ 0 ] , [ 0 , 1 ] , [ 0 , 1 , 2 ] ]");
   EXPECT_EQ_INT(__LINE__, true, array[0].get_array().empty());
-  EXPECT_EQ_INT(__LINE__, 0.0, array[1].get_array()[0].get_number());
-  EXPECT_EQ_INT(__LINE__, 0.0, array[2].get_array()[0].get_number());
-  EXPECT_EQ_INT(__LINE__, 1.0, array[2].get_array()[1].get_number());
-  EXPECT_EQ_INT(__LINE__, 0.0, array[3].get_array()[0].get_number());
-  EXPECT_EQ_INT(__LINE__, 1.0, array[3].get_array()[1].get_number());
-  EXPECT_EQ_INT(__LINE__, 2.0, array[3].get_array()[2].get_number());
+  EXPECT_EQ_INT(__LINE__, 0.0, array[1].get_array()[0].get_double());
+  EXPECT_EQ_INT(__LINE__, 0.0, array[2].get_array()[0].get_double());
+  EXPECT_EQ_INT(__LINE__, 1.0, array[2].get_array()[1].get_double());
+  EXPECT_EQ_INT(__LINE__, 0.0, array[3].get_array()[0].get_double());
+  EXPECT_EQ_INT(__LINE__, 1.0, array[3].get_array()[1].get_double());
+  EXPECT_EQ_INT(__LINE__, 2.0, array[3].get_array()[2].get_double());
 
   array = JSON_parse_array("[0, -0, -0.0,1, -1,1.5, -1.5, 3.1416,1E10,1e10 ]");
-  EXPECT_EQ_INT(__LINE__, 0.0, array[0].get_number());
-  EXPECT_EQ_INT(__LINE__, -0.0, array[1].get_number());
-  EXPECT_EQ_INT(__LINE__, -0.0, array[2].get_number());
-  EXPECT_EQ_INT(__LINE__, 1.0, array[3].get_number());
-  EXPECT_EQ_INT(__LINE__, -1.0, array[4].get_number());
-  EXPECT_EQ_INT(__LINE__, 1.5, array[5].get_number());
-  EXPECT_EQ_INT(__LINE__, -1.5, array[6].get_number());
-  EXPECT_EQ_INT(__LINE__, 3.1416, array[7].get_number());
-  EXPECT_EQ_INT(__LINE__, 1E10, array[8].get_number());
-  EXPECT_EQ_INT(__LINE__, 1e10, array[9].get_number());
+  EXPECT_EQ_INT(__LINE__, 0.0, array[0].get_double());
+  EXPECT_EQ_INT(__LINE__, -0.0, array[1].get_double());
+  EXPECT_EQ_INT(__LINE__, -0.0, array[2].get_double());
+  EXPECT_EQ_INT(__LINE__, 1.0, array[3].get_double());
+  EXPECT_EQ_INT(__LINE__, -1.0, array[4].get_double());
+  EXPECT_EQ_INT(__LINE__, 1.5, array[5].get_double());
+  EXPECT_EQ_INT(__LINE__, -1.5, array[6].get_double());
+  EXPECT_EQ_INT(__LINE__, 3.1416, array[7].get_double());
+  EXPECT_EQ_INT(__LINE__, 1E10, array[8].get_double());
+  EXPECT_EQ_INT(__LINE__, 1e10, array[9].get_double());
 
   EXPECT_EXCEPTION(__LINE__, "[\"a\", nul]", value_t::ARRAY,
                    std::invalid_argument("literial \"null\" is not correct"));
@@ -358,7 +358,7 @@ void test_parse_object() {
   EXPECT_EQ_INT(__LINE__, nullptr, object2.get_null("n"));
   EXPECT_EQ_INT(__LINE__, false, object2.get_bool("f"));
   EXPECT_EQ_INT(__LINE__, true, object2.get_bool("t"));
-  EXPECT_EQ_INT(__LINE__, 123.0, object2.get_number("i"));
+  EXPECT_EQ_INT(__LINE__, 123.0, object2.get_double("i"));
   EXPECT_EQ_INT(__LINE__, std::string("abc"), object2.get_string("s"));
 
   test = R"({
@@ -562,12 +562,12 @@ void test_API() {
   j["user"]["id"] = 10;
   j["user"]["name"] = "Nomango";
   EXPECT_EQ_INT(__LINE__, nullptr, j.get_null("null"));
-  EXPECT_EQ_INT(__LINE__, 1.0, j.get_number("number"));
-  EXPECT_EQ_INT(__LINE__, 1.5, j.get_number("float"));
+  EXPECT_EQ_INT(__LINE__, 1.0, j.get_int("number"));
+  EXPECT_EQ_INT(__LINE__, 1.5, j.get_double("float"));
   EXPECT_EQ_INT(__LINE__, std::string("this is a string"),
                 j.get_string("string"));
   EXPECT_EQ_INT(__LINE__, true, j.get_bool("boolean"));
-  EXPECT_EQ_INT(__LINE__, 10.0, j.get_object("user").get_number("id"));
+  EXPECT_EQ_INT(__LINE__, 10.0, j.get_object("user").get_double("id"));
   EXPECT_EQ_INT(__LINE__, std::string("Nomango"),
                 j.get_object("user").get_string("name"));
   JSON_Object obj2 = {
@@ -581,7 +581,7 @@ void test_API() {
       {"object2", {{"key", "val"}, {"key2", {{"key3", "val"}}}}}};
   // auto l = obj2;
   EXPECT_EQ_INT(__LINE__, nullptr, obj2.get<std::nullptr_t>("nul"));
-  EXPECT_EQ_INT(__LINE__, 1.0, obj2.get<double>("number"));
+  EXPECT_EQ_INT(__LINE__, 1, obj2.get<int>("number"));
   EXPECT_EQ_INT(__LINE__, 1.3, obj2.get<double>("float"));
   EXPECT_EQ_INT(__LINE__, false, obj2.get<bool>("boolean"));
 }
