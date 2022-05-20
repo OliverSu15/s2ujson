@@ -66,17 +66,17 @@ class JSON_Data {
   }
 
   // All the getter
-  inline std::nullptr_t get_null() { return std::get<std::nullptr_t>(data); }
-  inline bool get_bool() { return std::get<bool>(data); }
-  inline double get_double() {
+  inline std::nullptr_t &get_null() { return std::get<std::nullptr_t>(data); }
+  inline bool &get_bool() { return std::get<bool>(data); }
+  inline double &get_double() {
     if (std::holds_alternative<int>(data)) {
-      return static_cast<double>(std::get<int>(data));
+      set(static_cast<double>(std::get<int>(data)));
     }
     return std::get<double>(data);
   }
-  inline int get_int() {
+  inline int &get_int() {
     if (std::holds_alternative<double>(data)) {
-      return static_cast<int>(std::get<double>(data));
+      set(static_cast<int>(std::get<double>(data)));
     }
     return std::get<int>(data);
   }
@@ -221,6 +221,20 @@ class JSON_Data {
       data;
   value_t type = value_t::NULL_DATA;
 };
+template <>
+inline const int &JSON_Data::get<int>() {
+  if (std::holds_alternative<double>(data)) {
+    set(static_cast<int>(std::get<double>(data)));
+  }
+  return std::get<int>(data);
+}
+template <>
+inline const double &JSON_Data::get<double>() {
+  if (std::holds_alternative<int>(data)) {
+    set(static_cast<double>(std::get<int>(data)));
+  }
+  return std::get<double>(data);
+}
 }  // namespace s2ujson
 
 /**
