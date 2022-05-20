@@ -419,6 +419,7 @@ class JSON_Object {
       output_string +=
           ("\"" + i.first + "\"" + ":" + i.second.to_string() + ",");
     }
+    output_string.pop_back();
     output_string.push_back('}');
     return output_string;
   }
@@ -537,6 +538,7 @@ inline std::string JSON_Data::array_to_string() {
   for (auto i : array) {
     output_string += (i.to_string() + ",");
   }
+  output_string.pop_back();
   output_string += "]";
   return output_string;
 }
