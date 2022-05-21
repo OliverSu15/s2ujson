@@ -562,7 +562,7 @@ void test_API() {
   j["user"]["id"] = 10;
   j["user"]["name"] = "Nomango";
   EXPECT_EQ_INT(__LINE__, nullptr, j.get_null("null"));
-  EXPECT_EQ_INT(__LINE__, 1.0, j.get_int("number"));
+  EXPECT_EQ_INT(__LINE__, 1, j.get_int("number"));
   EXPECT_EQ_INT(__LINE__, 1.5, j.get_double("float"));
   EXPECT_EQ_INT(__LINE__, std::string("this is a string"),
                 j.get_string("string"));

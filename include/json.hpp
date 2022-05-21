@@ -347,28 +347,28 @@ class JSON_Object {
   // }
 
   // All getter
-  inline std::nullptr_t get_null(const std::string &key) {
+  inline std::nullptr_t &get_null(const std::string &key) {
     is_key_valid(key);
     return object.find(key)->second.get_null();
   }
-  inline std::nullptr_t get_null(const std::string &&key) {
+  inline std::nullptr_t &get_null(const std::string &&key) {
     return get_null(key);
   }
-  inline bool get_bool(const std::string &key) {
+  inline bool &get_bool(const std::string &key) {
     is_key_valid(key);
     return object.find(key)->second.get_bool();
   }
-  inline bool get_bool(const std::string &&key) { return get_bool(key); }
-  inline double get_double(const std::string &key) {
+  inline bool &get_bool(const std::string &&key) { return get_bool(key); }
+  inline double &get_double(const std::string &key) {
     is_key_valid(key);
     return object.find(key)->second.get_double();
   }
-  inline int get_int(const std::string &key) {
+  inline int &get_int(const std::string &key) {
     is_key_valid(key);
     return object.find(key)->second.get_int();
   }
-  inline double get_double(std::string &&key) { return get_double(key); }
-  inline double get_int(std::string &&key) { return get_int(key); }
+  inline double &get_double(std::string &&key) { return get_double(key); }
+  inline int &get_int(std::string &&key) { return get_int(key); }
   inline const std::string &get_string(const std::string &key) {
     is_key_valid(key);
     return object.find(key)->second.get_string();
